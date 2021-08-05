@@ -2,7 +2,8 @@ package corgitaco.modid.entrypoint;
 
 
 import corgitaco.modid.Main;
-import corgitaco.modid.StructureKillsLeft;
+import corgitaco.modid.StructureProtector;
+import corgitaco.modid.configuration.StructureStartProtection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -27,7 +28,8 @@ public class ForgeEntryPoint {
             for (Structure<?> structure : entity.level.getChunkAt(entity.blockPosition()).getAllReferences().keySet()) {
                 Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
                 structureStart.ifPresent(start -> {
-                    if (((StructureKillsLeft) start).getKillsLeft() > 0) {
+                    StructureStartProtection protector = ((StructureProtector) start).getProtector();
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start)) {
                         ((ServerPlayerEntity) entity).displayClientMessage(new TranslationTextComponent("No bad"), true);
                         event.setCanceled(true);
                     }
@@ -42,7 +44,8 @@ public class ForgeEntryPoint {
         for (Structure<?> structure : entity.level.getChunkAt(entity.blockPosition()).getAllReferences().keySet()) {
             Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
             structureStart.ifPresent(start -> {
-                if (((StructureKillsLeft) start).getKillsLeft() > 0) {
+                StructureStartProtection protector = ((StructureProtector) start).getProtector();
+                if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start)) {
                     ((ServerPlayerEntity) entity).displayClientMessage(new TranslationTextComponent("No bad"), true);
                     event.setCanceled(true);
                 }

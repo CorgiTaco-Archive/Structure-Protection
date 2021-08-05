@@ -8,7 +8,9 @@
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinStructure",
-    "MixinStructureStart"
+    "MixinStructureStart",
+    "access.RegistryAccess",
+    "access.StructureStartAccess"
   ],
   "client": [
   ],

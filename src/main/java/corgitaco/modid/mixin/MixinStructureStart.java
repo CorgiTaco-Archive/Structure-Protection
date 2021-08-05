@@ -1,6 +1,7 @@
 package corgitaco.modid.mixin;
 
-import corgitaco.modid.StructureKillsLeft;
+import corgitaco.modid.StructureProtector;
+import corgitaco.modid.configuration.StructureStartProtection;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.MutableBoundingBox;
@@ -15,33 +16,33 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import javax.annotation.Nullable;
+
 @Mixin(StructureStart.class)
-public abstract class MixinStructureStart<C extends IFeatureConfig> implements StructureKillsLeft {
+public abstract class MixinStructureStart<C extends IFeatureConfig> implements StructureProtector {
 
-
-    @Shadow
-    @Final
-    protected SharedSeedRandom random;
-    private int killsLeft;
+    @Nullable
+    StructureStartProtection structureStartProtection;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void killsLeft(Structure<C> structure, int x, int z, MutableBoundingBox boundingBox, int i, long seed, CallbackInfo ci) {
-        this.killsLeft = this.random.nextInt(1000);
     }
 
 
     @Inject(method = "createTag", at = @At("RETURN"))
     private void attachConditions(int x, int z, CallbackInfoReturnable<CompoundNBT> cir) {
-        cir.getReturnValue().putInt("killsLeft", this.killsLeft);
+        if (this.structureStartProtection != null) {
+            cir.getReturnValue().put("protector", this.structureStartProtection.write());
+        }
     }
 
     @Override
-    public int getKillsLeft() {
-        return killsLeft;
+    public StructureStartProtection getProtector() {
+        return this.structureStartProtection;
     }
 
     @Override
-    public void setKillsLeft(int killsLeft) {
-        this.killsLeft = killsLeft;
+    public void setProtection(StructureStartProtection structureStartProtection) {
+        this.structureStartProtection = structureStartProtection;
     }
 }

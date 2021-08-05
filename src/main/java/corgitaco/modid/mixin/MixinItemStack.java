@@ -1,6 +1,9 @@
 package corgitaco.modid.mixin;
 
-import corgitaco.modid.StructureKillsLeft;
+import corgitaco.modid.StructureProtector;
+import corgitaco.modid.configuration.StructureStartProtection;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.ActionResultType;
@@ -25,14 +28,14 @@ public class MixinItemStack {
     private void cancelUseIfIncorrect(ItemUseContext itemUseContext, CallbackInfoReturnable<ActionResultType> cir) {
         World level = itemUseContext.getLevel();
         if (!level.isClientSide) {
-            for (Structure<?> structure : level.getChunkAt(itemUseContext.getPlayer().blockPosition()).getAllReferences().keySet()) {
-                Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) level).startsForFeature(SectionPos.of(itemUseContext.getPlayer().blockPosition()), structure).findFirst();
+            PlayerEntity player = itemUseContext.getPlayer();
+            for (Structure<?> structure : level.getChunkAt(player.blockPosition()).getAllReferences().keySet()) {
+                Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
                 structureStart.ifPresent(start -> {
-                    if (start.getBoundingBox().isInside(itemUseContext.getClickedPos())) {
-                        if (((StructureKillsLeft) start).getKillsLeft() > 0) {
-                            itemUseContext.getPlayer().displayClientMessage(new TranslationTextComponent("No bad"), true);
-                            cir.setReturnValue(ActionResultType.FAIL);
-                        }
+                    StructureStartProtection protector = ((StructureProtector) start).getProtector();
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start)) {
+                        player.displayClientMessage(new TranslationTextComponent("No bad"), true);
+                        cir.setReturnValue(ActionResultType.FAIL);
                     }
                 });
             }
