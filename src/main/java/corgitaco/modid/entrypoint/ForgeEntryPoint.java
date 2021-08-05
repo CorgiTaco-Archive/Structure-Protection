@@ -29,7 +29,7 @@ public class ForgeEntryPoint {
                 Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
                 structureStart.ifPresent(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start)) {
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos())) {
                         ((ServerPlayerEntity) entity).displayClientMessage(new TranslationTextComponent("No bad"), true);
                         event.setCanceled(true);
                     }
@@ -45,7 +45,7 @@ public class ForgeEntryPoint {
             Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
             structureStart.ifPresent(start -> {
                 StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start)) {
+                if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos())) {
                     event.setCanceled(true);
                 }
             });

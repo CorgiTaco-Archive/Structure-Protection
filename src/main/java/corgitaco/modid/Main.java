@@ -1,8 +1,8 @@
 package corgitaco.modid;
 
 import corgitaco.modid.api.StructureProtectionRegistry;
+import corgitaco.modid.configuration.condition.AdvancementCondition;
 import corgitaco.modid.configuration.condition.EntityTypeKillCondition;
-import corgitaco.modid.configuration.condition.KillCondition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -32,7 +32,9 @@ public class Main {
     }
 
     public static void registerConditions() {
-        Registry.register(StructureProtectionRegistry.CONFIG_CONDITION, new ResourceLocation(MOD_ID, "entity_type_kill_condition"), EntityTypeKillCondition.CONFIG_CODEC);
-        Registry.register(StructureProtectionRegistry.DISK_CONDITION, new ResourceLocation(MOD_ID, "entity_type_kill_condition"), EntityTypeKillCondition.DISK_CODEC);
+        Registry.register(StructureProtectionRegistry.CONFIG_CONDITION, new ResourceLocation(MOD_ID, "entity_type_kill"), EntityTypeKillCondition.CONFIG_CODEC);
+        Registry.register(StructureProtectionRegistry.DISK_CONDITION, new ResourceLocation(MOD_ID, "entity_type_kill"), EntityTypeKillCondition.DISK_CODEC);
+        Registry.register(StructureProtectionRegistry.CONFIG_CONDITION, new ResourceLocation(MOD_ID, "advancement"), AdvancementCondition.CONFIG_CODEC);
+        Registry.register(StructureProtectionRegistry.DISK_CONDITION, new ResourceLocation(MOD_ID, "advancement"), AdvancementCondition.CONFIG_CODEC);
     }
 }

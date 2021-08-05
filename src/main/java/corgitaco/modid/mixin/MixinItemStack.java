@@ -33,7 +33,7 @@ public class MixinItemStack {
                 Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
                 structureStart.ifPresent(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start)) {
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start, itemUseContext.getClickedPos())) {
                         player.displayClientMessage(new TranslationTextComponent("No bad"), true);
                         cir.setReturnValue(ActionResultType.FAIL);
                     }

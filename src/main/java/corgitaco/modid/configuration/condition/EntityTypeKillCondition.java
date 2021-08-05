@@ -12,6 +12,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.gen.feature.structure.StructureStart;
@@ -195,8 +197,8 @@ public class EntityTypeKillCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart) {
-        if (structureStart.getBoundingBox().isInside(playerEntity.blockPosition())) {
+    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target) {
+        if (box.isInside(target)) {
             if (!isPerPlayer()) {
                 for (Map.Entry<Object, KillsLeftTracker> entry : this.killsLeft.entrySet()) {
                     if (entry.getValue().getKillsLeft() > 0) {

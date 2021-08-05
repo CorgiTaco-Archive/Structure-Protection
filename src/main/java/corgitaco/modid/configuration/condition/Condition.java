@@ -5,6 +5,8 @@ import corgitaco.modid.api.StructureProtectionRegistry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
@@ -26,9 +28,9 @@ public abstract class Condition {
 
     public abstract Codec<? extends Condition> diskCodec();
 
-    public abstract boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart);
+    public abstract boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target);
 
-    public void onEntityDie(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart) {
+    public void onEntityDie(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart,  MutableBoundingBox box) {
     }
 
     public abstract TranslationTextComponent textComponent();

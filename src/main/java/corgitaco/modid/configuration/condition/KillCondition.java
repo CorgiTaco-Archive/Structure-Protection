@@ -11,6 +11,8 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTUtil;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
@@ -78,9 +80,9 @@ public class KillCondition extends Condition {
         return DISK_CODEC;
     }
 
-    public void onEntityDie(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart) {
+    public void onEntityDie(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box) {
         LivingEntity killCredit = dyingEntity.getKillCredit();
-        if (dyingEntity instanceof MonsterEntity && killCredit != null && killCredit instanceof ServerPlayerEntity && structureStart.getBoundingBox().isInside(killCredit.blockPosition())) {
+        if (dyingEntity instanceof MonsterEntity && killCredit != null && killCredit instanceof ServerPlayerEntity && box.isInside(killCredit.blockPosition())) {
 
             if (killsLeftDefault == -1) {
                 this.killsLeftDefault = ((StructureStartAccess) structureStart).getRandom().nextInt(this.maxKillsLeft - this.minKillsLeft) + this.minKillsLeft;
@@ -103,7 +105,7 @@ public class KillCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart) {
+    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target) {
         if (structureStart.getBoundingBox().isInside(playerEntity.blockPosition())) {
             if (killsLeftDefault == -1) {
                 this.killsLeftDefault = ((StructureStartAccess) structureStart).getRandom().nextInt(this.maxKillsLeft - this.minKillsLeft) + this.minKillsLeft;
