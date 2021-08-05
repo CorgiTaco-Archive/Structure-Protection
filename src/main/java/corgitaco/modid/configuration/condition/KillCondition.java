@@ -1,9 +1,9 @@
 package corgitaco.modid.configuration.condition;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.modid.mixin.access.StructureStartAccess;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -20,12 +20,39 @@ import java.util.Map;
 @SuppressWarnings("ConstantConditions")
 public class KillCondition extends Condition {
 
+    public static final Codec<KillCondition> CONFIG_CODEC = RecordCodecBuilder.create((builder) -> {
+        return builder.group(Codec.BOOL.fieldOf("perPlayer").forGetter((killCondition) -> {
+            return killCondition.isPerPlayer();
+        }), Codec.INT.fieldOf("minKillsLeft").forGetter((killCondition) -> {
+            return killCondition.minKillsLeft;
+        }), Codec.INT.fieldOf("maxKillsLeft").forGetter((killCondition) -> {
+            return killCondition.maxKillsLeft;
+        })).apply(builder, KillCondition::new);
+    });
+
+    public static final Codec<KillCondition> DISK_CODEC = RecordCodecBuilder.create((builder) -> {
+        return builder.group(Codec.BOOL.fieldOf("perPlayer").forGetter((killCondition) -> {
+            return killCondition.isPerPlayer();
+        }), Codec.INT.fieldOf("minKillsLeft").forGetter((killCondition) -> {
+            return killCondition.minKillsLeft;
+        }), Codec.INT.fieldOf("maxKillsLeft").forGetter((killCondition) -> {
+            return killCondition.maxKillsLeft;
+        }), Codec.unboundedMap(Codec.INT, Codec.INT).fieldOf("killsByPlayer").forGetter((killCondition) -> {
+            return killCondition.killsByPlayer;
+        }), Codec.INT.fieldOf("killsLeftDefault").forGetter((killCondition) -> {
+            return killCondition.killsLeftDefault;
+        }), Codec.INT.fieldOf("killsLeft").forGetter((killCondition) -> {
+            return killCondition.killsLeft;
+        })).apply(builder, KillCondition::new);
+    });
+
+
     private final int minKillsLeft;
     private final int maxKillsLeft;
     private final Int2IntArrayMap killsByPlayer = new Int2IntArrayMap();
     private int killsLeftDefault = -1;
     private int killsLeft = -1;
-    
+
     protected KillCondition(boolean perPlayer, int minKillsLeft, int maxKillsLeft, Map<Integer, Integer> map, int killsLeftDefault, int killsLeft) {
         super(perPlayer);
         this.minKillsLeft = minKillsLeft;
@@ -42,34 +69,13 @@ public class KillCondition extends Condition {
     }
 
     @Override
-    public Codec<? extends Condition> codec() {
-        return null;
+    public Codec<? extends Condition> configCodec() {
+        return CONFIG_CODEC;
     }
 
     @Override
-    public CompoundNBT write() {
-        CompoundNBT compoundNBT = new CompoundNBT();
-        compoundNBT.putInt("killsLeftDefault", this.killsLeftDefault);
-        compoundNBT.putInt("killsLeft", this.killsLeft);
-        ListNBT listNBT = new ListNBT();
-        for (Int2IntArrayMap.Entry entry : this.killsByPlayer.int2IntEntrySet()) {
-            CompoundNBT nbt = new CompoundNBT();
-            nbt.putInt("uuid", entry.getIntKey());
-            nbt.putInt("killsLeft", entry.getIntValue());
-            listNBT.add(nbt);
-        }
-        compoundNBT.put("killsLeftByPlayer", listNBT);
-        return compoundNBT;
-    }
-
-    @Override
-    public void read(CompoundNBT readNBT) {
-        this.killsLeftDefault = readNBT.getInt("killsLeftDefault");
-        this.killsLeft = readNBT.getInt("killsLeft");
-
-        for (INBT killsLeftByPlayer : readNBT.getList("killsLeftByPlayer", 10)) {
-            this.killsByPlayer.put(NBTUtil.loadUUID(killsLeftByPlayer).hashCode(), ((CompoundNBT) killsLeftByPlayer).getInt("killsLeft"));
-        }
+    public Codec<? extends Condition> diskCodec() {
+        return DISK_CODEC;
     }
 
     public void onEntityDie(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart) {
@@ -106,7 +112,12 @@ public class KillCondition extends Condition {
                 this.killsLeft = this.killsLeftDefault;
             }
 
-            return isPerPlayer() ? this.killsByPlayer.get(playerEntity.getUUID().hashCode()) == 0 : this.killsLeft == 0;
+
+            boolean condition = isPerPlayer() ? this.killsByPlayer.get(playerEntity.getUUID().hashCode()) == 0 : this.killsLeft == 0;
+            if (!condition) {
+                playerEntity.displayClientMessage(textComponent(), true);
+            }
+            return condition;
         } else {
             return true;
         }

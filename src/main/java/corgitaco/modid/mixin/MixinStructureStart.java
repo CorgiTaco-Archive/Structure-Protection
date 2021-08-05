@@ -2,15 +2,14 @@ package corgitaco.modid.mixin;
 
 import corgitaco.modid.StructureProtector;
 import corgitaco.modid.configuration.StructureStartProtection;
+import corgitaco.modid.datapack.StructureProtectorFileLoader;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.SharedSeedRandom;
+import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.world.gen.feature.IFeatureConfig;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,13 +25,17 @@ public abstract class MixinStructureStart<C extends IFeatureConfig> implements S
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void killsLeft(Structure<C> structure, int x, int z, MutableBoundingBox boundingBox, int i, long seed, CallbackInfo ci) {
+        if(StructureProtectorFileLoader.PROTECTOR.containsKey(structure)) {
+            // Make sure we create a new instance!
+            this.structureStartProtection = StructureStartProtection.CONFIG_CODEC.decode(NBTDynamicOps.INSTANCE, StructureStartProtection.CONFIG_CODEC.encodeStart(NBTDynamicOps.INSTANCE, StructureProtectorFileLoader.PROTECTOR.get(structure)).result().get()).result().get().getFirst();
+        }
     }
 
 
     @Inject(method = "createTag", at = @At("RETURN"))
     private void attachConditions(int x, int z, CallbackInfoReturnable<CompoundNBT> cir) {
         if (this.structureStartProtection != null) {
-            cir.getReturnValue().put("protector", this.structureStartProtection.write());
+            cir.getReturnValue().put("protector", StructureStartProtection.DISK_CODEC.encodeStart(NBTDynamicOps.INSTANCE, structureStartProtection).result().get());
         }
     }
 

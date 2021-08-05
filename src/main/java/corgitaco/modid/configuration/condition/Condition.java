@@ -2,7 +2,6 @@ package corgitaco.modid.configuration.condition;
 
 import com.mojang.serialization.Codec;
 import corgitaco.modid.api.StructureProtectionRegistry;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -14,7 +13,8 @@ import java.util.function.Function;
 
 public abstract class Condition {
 
-    public static final Codec<Condition> CODEC = StructureProtectionRegistry.CONDITION.dispatchStable(Condition::codec, Function.identity());
+    public static final Codec<Condition> REGISTRY_CONFIG_CODEC = StructureProtectionRegistry.CONFIG_CONDITION.dispatchStable(Condition::configCodec, Function.identity());
+    public static final Codec<Condition> REGISTRY_DISK_CODEC = StructureProtectionRegistry.DISK_CONDITION.dispatchStable(Condition::diskCodec, Function.identity());
 
     private final boolean perPlayer;
 
@@ -22,11 +22,9 @@ public abstract class Condition {
         this.perPlayer = perPlayer;
     }
 
-    public abstract Codec<? extends Condition> codec();
+    public abstract Codec<? extends Condition> configCodec();
 
-    public abstract CompoundNBT write();
-
-    public abstract void read(CompoundNBT readNBT);
+    public abstract Codec<? extends Condition> diskCodec();
 
     public abstract boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart);
 

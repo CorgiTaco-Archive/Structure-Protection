@@ -46,7 +46,6 @@ public class ForgeEntryPoint {
             structureStart.ifPresent(start -> {
                 StructureStartProtection protector = ((StructureProtector) start).getProtector();
                 if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start)) {
-                    ((ServerPlayerEntity) entity).displayClientMessage(new TranslationTextComponent("No bad"), true);
                     event.setCanceled(true);
                 }
             });
