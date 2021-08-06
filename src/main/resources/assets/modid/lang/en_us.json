@@ -6,5 +6,10 @@
   "modid.actiontype.action.block_break": "break blocks",
   "modid.actiontype.action.block_place": "place blocks",
   "modid.actiontype.action.container_open": "open containers",
-  "monstercategory.monster": "category/Monster"
+  "monstercategory.monster": "category/Monster",
+  "monstercategory.creature": "category/Creature",
+  "monstercategory.ambient": "category/Ambient",
+  "monstercategory.water_creature": "category/Water Creature",
+  "monstercategory.water_ambient": "category/Water Ambient",
+  "monstercategory.misc": "category/Misc"
 }
