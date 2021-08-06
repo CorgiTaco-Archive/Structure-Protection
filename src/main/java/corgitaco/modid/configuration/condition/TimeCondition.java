@@ -49,7 +49,7 @@ public class TimeCondition extends Condition {
 
 
     // Config
-    protected TimeCondition(boolean perPlayer, int minTimeInTicks, int maxTimeInTicks) {
+    public TimeCondition(boolean perPlayer, int minTimeInTicks, int maxTimeInTicks) {
         this(perPlayer, minTimeInTicks, maxTimeInTicks, new Int2IntArrayMap(), -1, -1);
     }
 
