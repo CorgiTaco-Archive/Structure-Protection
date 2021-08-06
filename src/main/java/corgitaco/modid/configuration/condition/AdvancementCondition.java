@@ -16,6 +16,7 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class AdvancementCondition extends Condition {
@@ -45,7 +46,7 @@ public class AdvancementCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target) {
+    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ConditionType conditionType, List<TranslationTextComponent> requirements) {
         AdvancementManager advancements = serverWorld.getServer().getAdvancements();
         if (box.isInside(target)) {
             if (fastAdvancements.isEmpty()) {
@@ -59,20 +60,18 @@ public class AdvancementCondition extends Condition {
                 }
             }
 
+            boolean missingAdvancement = false;
             for (Advancement advancement : fastAdvancements) {
                 AdvancementProgress advancementProgress = playerEntity.getAdvancements().getOrStartProgress(advancement);
 
                 if (!advancementProgress.isDone()) {
-                    return false;
+                    missingAdvancement = true;
+                    requirements.add(new TranslationTextComponent("Missing advancement: %s" + advancement.getChatComponent()));
                 }
-
             }
+
+            return missingAdvancement;
         }
         return true;
-    }
-
-    @Override
-    public TranslationTextComponent textComponent() {
-        return null;
     }
 }

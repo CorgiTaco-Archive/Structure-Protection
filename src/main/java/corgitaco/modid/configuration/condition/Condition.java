@@ -10,6 +10,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.List;
 import java.util.function.Function;
 
 public abstract class Condition {
@@ -27,15 +28,13 @@ public abstract class Condition {
 
     public abstract Codec<? extends Condition> diskCodec();
 
-    public abstract boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target);
+    public abstract boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ConditionType type, List<TranslationTextComponent> requirements);
 
     public void onEntityDeath(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box) {
     }
 
     public void playerTick(ServerPlayerEntity player, StructureStart<?> structureStart, MutableBoundingBox box) {
     }
-
-    public abstract TranslationTextComponent textComponent();
 
     public boolean isPerPlayer() {
         return perPlayer;

@@ -11,6 +11,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.List;
 import java.util.Map;
 
 public class TimeCondition extends Condition {
@@ -74,7 +75,7 @@ public class TimeCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target) {
+    public boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ConditionType type, List<TranslationTextComponent> requirements) {
         if (box.isInside(target)) {
 
             if (isPerPlayer()) {
@@ -113,10 +114,5 @@ public class TimeCondition extends Condition {
         if (lastTime > 0) {
             this.playerTimeLeftInTicks.put(uuidHash, lastTime - 1);
         }
-    }
-
-    @Override
-    public TranslationTextComponent textComponent() {
-        return null;
     }
 }

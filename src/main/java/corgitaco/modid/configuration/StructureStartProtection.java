@@ -10,6 +10,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructurePiece;
 import net.minecraft.world.gen.feature.structure.StructureStart;
@@ -68,23 +69,31 @@ public class StructureStartProtection {
     }
 
     public boolean conditionsMet(ServerPlayerEntity playerEntity, ServerWorld world, StructureStart<?> structureStart, BlockPos target, ConditionType type) {
+        ArrayList<TranslationTextComponent> components = new ArrayList<>();
         int conditionHits = 0;
         int globalConditionHits = 0;
         ConditionContext conditionContext = this.typeToConditionContext.get(type);
         if (usePieceBounds) {
             for (StructurePiece piece : structureStart.getPieces()) {
                 for (Condition condition : this.conditions) {
-                    if (conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
-                        return true;
-                    }
+                    if (conditionContext.requiredPassedConditions <= 0) {
+                        if (!condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
+                            return false;
+                        }
+                    } else {
 
-                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target)) {
-                        globalConditionHits++;
+                        if (conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
+                            return true;
+                        }
+
+                        if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
+                            globalConditionHits++;
+                        }
                     }
                 }
                 for (Condition condition : conditionContext.conditions) {
                     if (conditionContext.requiredPassedConditions <= 0) {
-                        if (!condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target)) {
+                        if (!condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target, type, components)) {
                             return false;
                         }
                     } else {
@@ -92,7 +101,7 @@ public class StructureStartProtection {
                             return true;
                         }
 
-                        if (condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target)) {
+                        if (condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target, type, components)) {
                             conditionHits++;
                         }
                     }
@@ -104,14 +113,14 @@ public class StructureStartProtection {
                     return true;
                 }
 
-                if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target)) {
+                if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
                     globalConditionHits++;
                 }
             }
 
             for (Condition condition : conditionContext.conditions) {
                 if (conditionContext.requiredPassedConditions <= 0) {
-                    if (!condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target)) {
+                    if (!condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
                         return false;
                     }
                 } else {
@@ -119,13 +128,15 @@ public class StructureStartProtection {
                         return true;
                     }
 
-                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target)) {
+                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
                         conditionHits++;
                     }
                 }
             }
         }
-        return true;
+        playerEntity.displayClientMessage(new TranslationTextComponent("Missing: ", components), true);
+
+        return false;
     }
 
     public void onEntityDeath(LivingEntity entity, ServerWorld world, StructureStart<?> structureStart) {

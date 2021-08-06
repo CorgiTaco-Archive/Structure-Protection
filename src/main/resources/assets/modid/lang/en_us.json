@@ -1,0 +1,7 @@
+{
+  "modid.condition.entity_type_kill.playerstructurekillsleft": "You need to kill %s entities(types: %s) %s to %s here.",
+  "modid.condition.entity_type_kill.structurekillsleft": "%s entities(types: %s) need to be killed to %s here.",
+  "modid.conditiontype.action.block_break": "break blocks",
+  "modid.conditiontype.action.block_place": "place blocks",
+  "modid.conditiontype.action.container_open": "open containers"
+}

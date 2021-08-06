@@ -197,11 +197,13 @@ public class EntityTypeKillCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target) {
+    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ConditionType type, List<TranslationTextComponent> remainingRequirements) {
         if (box.isInside(target)) {
             if (!isPerPlayer()) {
                 for (Map.Entry<Object, KillsTracker> entry : this.killsLeft.entrySet()) {
-                    if (entry.getValue().getKillsLeft() > 0) {
+                    int killsLeft = entry.getValue().getKillsLeft();
+                    if (killsLeft > 0) {
+                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.killcondition.structurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
                         return false;
                     }
                 }
@@ -218,18 +220,15 @@ public class EntityTypeKillCondition extends Condition {
 
 
                 for (Map.Entry<Object, KillsTracker> entry1 : killsLeftByPlayer.entrySet()) {
-                    if (entry1.getValue().getKillsLeft() > 0) {
+                    int killsLeft = entry1.getValue().getKillsLeft();
+                    if (killsLeft > 0) {
+                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.killcondition.playerstructurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
                         return false;
                     }
                 }
             }
         }
         return true;
-    }
-
-    @Override
-    public TranslationTextComponent textComponent() {
-        return new TranslationTextComponent("You still need to kill: %s mobs to build/destroy blocks here...", this.killsLeft);
     }
 
     public static class KillsTracker {
