@@ -74,25 +74,33 @@ public class StructureStartProtection {
         int globalConditionHits = 0;
         ConditionContext conditionContext = this.typeToConditionContext.get(type);
         if (usePieceBounds) {
+            StructurePiece intersectingPiece = null;
             for (StructurePiece piece : structureStart.getPieces()) {
-                for (Condition condition : this.conditions) {
-
-                    if (conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
-                        return true;
-                    }
-
-                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                        globalConditionHits++;
-                    }
+                if (piece.getBoundingBox().isInside(target)) {
+                    intersectingPiece = piece;
+                    break;
                 }
-                for (Condition condition : conditionContext.conditions) {
-                    if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
-                        return true;
-                    }
+            }
+            if (intersectingPiece == null) {
+                return true;
+            }
 
-                    if (condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target, type, components)) {
-                        conditionHits++;
-                    }
+            for (Condition condition : this.conditions) {
+                if (conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
+                    return true;
+                }
+
+                if (condition.checkIfPasses(playerEntity, world, structureStart, intersectingPiece.getBoundingBox(), target, type, components)) {
+                    globalConditionHits++;
+                }
+            }
+            for (Condition condition : conditionContext.conditions) {
+                if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
+                    return true;
+                }
+
+                if (condition.checkIfPasses(playerEntity, world, structureStart, intersectingPiece.getBoundingBox(), target, type, components)) {
+                    conditionHits++;
                 }
             }
         } else {

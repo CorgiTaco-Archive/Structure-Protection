@@ -203,7 +203,7 @@ public class EntityTypeKillCondition extends Condition {
                 for (Map.Entry<Object, KillsTracker> entry : this.killsLeft.entrySet()) {
                     int killsLeft = entry.getValue().getKillsLeft();
                     if (killsLeft > 0) {
-                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.killcondition.structurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
+                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.structurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
                         return false;
                     }
                 }
@@ -222,7 +222,7 @@ public class EntityTypeKillCondition extends Condition {
                 for (Map.Entry<Object, KillsTracker> entry1 : killsLeftByPlayer.entrySet()) {
                     int killsLeft = entry1.getValue().getKillsLeft();
                     if (killsLeft > 0) {
-                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.killcondition.playerstructurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
+                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.playerstructurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
                         return false;
                     }
                 }

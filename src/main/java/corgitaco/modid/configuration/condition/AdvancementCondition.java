@@ -2,6 +2,7 @@ package corgitaco.modid.configuration.condition;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import corgitaco.modid.Main;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementManager;
@@ -66,7 +67,7 @@ public class AdvancementCondition extends Condition {
 
                 if (!advancementProgress.isDone()) {
                     missingAdvancement = true;
-                    requirements.add(new TranslationTextComponent("Missing advancement: %s" + advancement.getChatComponent()));
+                    requirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.advancement", advancement.getChatComponent(), conditionType.getActionTranslationComponent()));
                 }
             }
 
