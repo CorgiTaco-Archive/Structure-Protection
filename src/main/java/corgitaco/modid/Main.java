@@ -3,6 +3,7 @@ package corgitaco.modid;
 import corgitaco.modid.api.StructureProtectionRegistry;
 import corgitaco.modid.configuration.condition.AdvancementCondition;
 import corgitaco.modid.configuration.condition.EntityTypeKillCondition;
+import corgitaco.modid.configuration.condition.TimeCondition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -36,5 +37,8 @@ public class Main {
         Registry.register(StructureProtectionRegistry.DISK_CONDITION, new ResourceLocation(MOD_ID, "entity_type_kill"), EntityTypeKillCondition.DISK_CODEC);
         Registry.register(StructureProtectionRegistry.CONFIG_CONDITION, new ResourceLocation(MOD_ID, "advancement"), AdvancementCondition.CONFIG_CODEC);
         Registry.register(StructureProtectionRegistry.DISK_CONDITION, new ResourceLocation(MOD_ID, "advancement"), AdvancementCondition.CONFIG_CODEC);
+        Registry.register(StructureProtectionRegistry.CONFIG_CONDITION, new ResourceLocation(MOD_ID, "time"), TimeCondition.CONFIG_CODEC);
+        Registry.register(StructureProtectionRegistry.DISK_CONDITION, new ResourceLocation(MOD_ID, "time"), TimeCondition.DISK_CODEC);
+
     }
 }

@@ -121,6 +121,24 @@ public class StructureStartProtection {
         }
     }
 
+    public void playerTick(ServerPlayerEntity player, StructureStart<?> structureStart) {
+        for (Map.Entry<ConditionType, ConditionContext> conditionTypeConditionContextEntry : typeToConditionContext.entrySet()) {
+            ConditionContext conditionContext = conditionTypeConditionContextEntry.getValue();
+            if (usePieceBounds) {
+                for (StructurePiece piece : structureStart.getPieces()) {
+                    for (Condition condition : conditionContext.conditions) {
+                        condition.playerTick(player, structureStart, piece.getBoundingBox());
+                    }
+                }
+            } else {
+                for (Condition condition : conditionContext.conditions) {
+                    condition.playerTick(player, structureStart, structureStart.getBoundingBox());
+                }
+            }
+        }
+
+    }
+
     public static class ConditionContext {
         public static final Codec<ConditionContext> CONFIG_CODEC = RecordCodecBuilder.create((builder) -> {
             return builder.group(Codec.list(Condition.REGISTRY_CONFIG_CODEC).fieldOf("conditions").forGetter((structureStartProtection) -> {
