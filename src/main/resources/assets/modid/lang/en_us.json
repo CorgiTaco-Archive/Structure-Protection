@@ -1,11 +1,10 @@
 {
-  "modid.condition.entity_type_kill.playerstructurekillsleft": "-Kill %s entities(types: %s).",
-  "modid.condition.entity_type_kill.structurekillsleft": "-%s entities(types: %s) still need to be killed.",
-  "modid.condition.time": "-Wait %s days.",
-  "modid.condition.advancement": "-Advancement(s): %s",
+  "modid.condition.entity_type_kill.structurekillsleft": "• %s entities(types: %s) still need to be killed.",
+  "modid.condition.time": "• Wait %s days.",
+  "modid.condition.advancement": "• Advancement(s): %s",
   "modid.condition.missing": "You're missing requirements to %s here:",
-  "modid.conditiontype.action.block_break": "break blocks",
-  "modid.conditiontype.action.block_place": "place blocks",
-  "modid.conditiontype.action.container_open": "open containers",
+  "modid.actiontype.action.block_break": "break blocks",
+  "modid.actiontype.action.block_place": "place blocks",
+  "modid.actiontype.action.container_open": "open containers",
   "monstercategory.monster": "category/Monster"
 }

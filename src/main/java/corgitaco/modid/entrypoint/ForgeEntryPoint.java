@@ -4,7 +4,7 @@ package corgitaco.modid.entrypoint;
 import corgitaco.modid.Main;
 import corgitaco.modid.StructureProtector;
 import corgitaco.modid.configuration.StructureStartProtection;
-import corgitaco.modid.configuration.condition.ConditionType;
+import corgitaco.modid.configuration.condition.ActionType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -30,7 +30,7 @@ public class ForgeEntryPoint {
                 Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
                 structureStart.ifPresent(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos(), ConditionType.BLOCK_PLACE)) {
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos(), ActionType.BLOCK_PLACE)) {
                         ((ServerPlayerEntity) entity).displayClientMessage(new TranslationTextComponent("No bad"), true);
                         event.setCanceled(true);
                     }
@@ -46,7 +46,7 @@ public class ForgeEntryPoint {
             Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
             structureStart.ifPresent(start -> {
                 StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos(), ConditionType.BLOCK_BREAK)) {
+                if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos(), ActionType.BLOCK_BREAK)) {
                     event.setCanceled(true);
                 }
             });

@@ -6,7 +6,6 @@ import corgitaco.modid.Main;
 import corgitaco.modid.mixin.access.StructureStartAccess;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -172,7 +171,8 @@ public class EntityTypeKillCondition extends Condition {
         return DISK_CODEC;
     }
 
-    public void onEntityDie(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart) {
+    @Override
+    public void onEntityDeath(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box) {
         LivingEntity killCredit = dyingEntity.getKillCredit();
         if (dyingEntity instanceof MonsterEntity && killCredit != null && killCredit instanceof ServerPlayerEntity && structureStart.getBoundingBox().isInside(killCredit.blockPosition())) {
 
@@ -228,11 +228,14 @@ public class EntityTypeKillCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ConditionType type, List<TranslationTextComponent> remainingRequirements) {
+    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ActionType type, List<TranslationTextComponent> remainingRequirements) {
         if (box.isInside(target)) {
             if (!isPerPlayer()) {
                 for (Map.Entry<Object, KillsTracker> entry : this.killsLeft.entrySet()) {
-                    int killsLeft = entry.getValue().getKillsLeft();
+                    KillsTracker killsTracker = entry.getValue();
+                    int killsLeft = killsTracker.getKillsLeft();
+                    setDefaultsAndUpdate((StructureStartAccess) structureStart, killsTracker, false);
+
                     if (killsLeft > 0) {
                         remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.structurekillsleft", killsLeft, this.types));
                         return false;
@@ -253,9 +256,7 @@ public class EntityTypeKillCondition extends Condition {
                 for (Map.Entry<Object, KillsTracker> entry1 : killsLeftByPlayer.entrySet()) {
                     int killsLeft = entry1.getValue().getKillsLeft();
                     if (killsLeft > 0) {
-
-
-                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.playerstructurekillsleft", killsLeft, this.types));
+                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.structurekillsleft", killsLeft, this.types));
                         return false;
                     }
                 }

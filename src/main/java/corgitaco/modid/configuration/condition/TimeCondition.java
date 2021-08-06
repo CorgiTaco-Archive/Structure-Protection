@@ -76,7 +76,7 @@ public class TimeCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ConditionType type, List<TranslationTextComponent> requirements) {
+    public boolean checkIfPasses(ServerPlayerEntity entity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ActionType type, List<TranslationTextComponent> requirements) {
         if (box.isInside(target)) {
 
             if (isPerPlayer()) {

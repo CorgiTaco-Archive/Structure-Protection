@@ -2,14 +2,13 @@ package corgitaco.modid.mixin;
 
 import corgitaco.modid.StructureProtector;
 import corgitaco.modid.configuration.StructureStartProtection;
-import corgitaco.modid.configuration.condition.ConditionType;
+import corgitaco.modid.configuration.condition.ActionType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.SectionPos;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
@@ -34,8 +33,7 @@ public class MixinItemStack {
                 Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
                 structureStart.ifPresent(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start, itemUseContext.getClickedPos(), ConditionType.BLOCK_PLACE)) {
-                        player.displayClientMessage(new TranslationTextComponent("No bad"), true);
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start, itemUseContext.getClickedPos(), ActionType.BLOCK_PLACE)) {
                         cir.setReturnValue(ActionResultType.FAIL);
                     }
                 });

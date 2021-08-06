@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.modid.configuration.condition.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -21,25 +21,76 @@ import java.util.*;
 public class StructureStartProtection {
 
     public static final Map<Structure<?>, StructureStartProtection> DEFAULTS = Util.make(new Object2ObjectArrayMap<>(), (map) -> {
-        map.put(Structure.VILLAGE, new StructureStartProtection(Util.make(new EnumMap<>(ConditionType.class), (map1) -> {
-            for (ConditionType value : ConditionType.values()) {
-                map1.put(value, new ConditionContext(new ArrayList<>(), 0, true));
-            }
-        }), Util.make(new ArrayList<>(), (list) -> {
-            list.add(new EntityTypeKillCondition(true, Util.make(new Object2ObjectArrayMap<>(), (map2) -> {
-                map2.put(EntityClassification.MONSTER, new EntityTypeKillCondition.KillsTracker(5, 25));
-            })));
-
+        map.put(Structure.VILLAGE, new StructureStartProtection(new EnumMap<>(ActionType.class), Util.make(new ArrayList<>(), (list) -> {
             list.add(new AdvancementCondition(Util.make(new HashSet<>(), (set) -> {
                 set.add(new ResourceLocation("adventure/hero_of_the_village"));
             })));
             list.add(new TimeCondition(false, 1000, 5000));
-
         }), true));
+
+        map.put(Structure.MINESHAFT, new StructureStartProtection(Util.make(new EnumMap<>(ActionType.class), (actionTypeConditions) -> {
+            actionTypeConditions.put(ActionType.CONTAINER_OPEN, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(25, 50));
+                })));
+            }), 0, true));
+
+            actionTypeConditions.put(ActionType.BLOCK_BREAK, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(50, 75));
+                })));
+            }), 0, true));
+
+            actionTypeConditions.put(ActionType.BLOCK_PLACE, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(75, 100));
+                })));
+            }), 0, true));
+        }), new ArrayList<>(), true));
+
+        map.put(Structure.OCEAN_MONUMENT, new StructureStartProtection(Util.make(new EnumMap<>(ActionType.class), (actionTypeConditions) -> {
+            actionTypeConditions.put(ActionType.CONTAINER_OPEN, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(25, 50));
+                })));
+            }), 0, true));
+
+            actionTypeConditions.put(ActionType.BLOCK_BREAK, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(50, 75));
+                })));
+            }), 0, true));
+
+            actionTypeConditions.put(ActionType.BLOCK_PLACE, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(75, 100));
+                })));
+            }), 0, true));
+        }), new ArrayList<>(), true));
+
+        map.put(Structure.PILLAGER_OUTPOST, new StructureStartProtection(Util.make(new EnumMap<>(ActionType.class), (actionTypeConditions) -> {
+            actionTypeConditions.put(ActionType.CONTAINER_OPEN, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(5, 10));
+                })));
+            }), 0, true));
+
+            actionTypeConditions.put(ActionType.BLOCK_BREAK, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(15, 25));
+                })));
+            }), 0, true));
+
+            actionTypeConditions.put(ActionType.BLOCK_PLACE, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
+                list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
+                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(25, 50));
+                })));
+            }), 0, true));
+        }), new ArrayList<>(), true));
     });
 
     public static final Codec<StructureStartProtection> CONFIG_CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(Codec.unboundedMap(ConditionType.CODEC, ConditionContext.CONFIG_CODEC).fieldOf("typeConditions").orElse(new Object2ObjectArrayMap<>()).forGetter((structureStartProtection) -> {
+        return builder.group(Codec.unboundedMap(ActionType.CODEC, ConditionContext.CONFIG_CODEC).fieldOf("typeConditions").orElse(new Object2ObjectArrayMap<>()).forGetter((structureStartProtection) -> {
             return structureStartProtection.typeToConditionContext;
         }), Codec.list(Condition.REGISTRY_CONFIG_CODEC).fieldOf("conditions").orElse(new ArrayList<>()).forGetter((structureStartProtection) -> {
             return structureStartProtection.conditions;
@@ -49,7 +100,7 @@ public class StructureStartProtection {
     });
 
     public static final Codec<StructureStartProtection> DISK_CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(Codec.unboundedMap(ConditionType.CODEC, ConditionContext.DISK_CODEC).fieldOf("typeConditions").orElse(new Object2ObjectArrayMap<>()).forGetter((structureStartProtection) -> {
+        return builder.group(Codec.unboundedMap(ActionType.CODEC, ConditionContext.DISK_CODEC).fieldOf("typeConditions").orElse(new Object2ObjectArrayMap<>()).forGetter((structureStartProtection) -> {
             return structureStartProtection.typeToConditionContext;
         }), Codec.list(Condition.REGISTRY_DISK_CODEC).fieldOf("conditions").orElse(new ArrayList<>()).forGetter((structureStartProtection) -> {
             return structureStartProtection.conditions;
@@ -58,17 +109,17 @@ public class StructureStartProtection {
         })).apply(builder, StructureStartProtection::new);
     });
 
-    private final Map<ConditionType, ConditionContext> typeToConditionContext = new EnumMap<>(ConditionType.class);
+    private final Map<ActionType, ConditionContext> typeToConditionContext = new EnumMap<>(ActionType.class);
     private final boolean usePieceBounds;
     private final List<Condition> conditions;
 
-    public StructureStartProtection(Map<ConditionType, ConditionContext> typeToConditionContext, List<Condition> conditions, boolean usePieceBounds) {
+    public StructureStartProtection(Map<ActionType, ConditionContext> typeToConditionContext, List<Condition> conditions, boolean usePieceBounds) {
         this.conditions = conditions;
         this.typeToConditionContext.putAll(typeToConditionContext);
         this.usePieceBounds = usePieceBounds;
     }
 
-    public boolean conditionsMet(ServerPlayerEntity playerEntity, ServerWorld world, StructureStart<?> structureStart, BlockPos target, ConditionType type) {
+    public boolean conditionsMet(ServerPlayerEntity playerEntity, ServerWorld world, StructureStart<?> structureStart, BlockPos target, ActionType type) {
         if (playerEntity.isCreative()) {
             return true;
         }
@@ -151,7 +202,7 @@ public class StructureStartProtection {
         }
 
 
-        for (Map.Entry<ConditionType, ConditionContext> conditionTypeConditionContextEntry : typeToConditionContext.entrySet()) {
+        for (Map.Entry<ActionType, ConditionContext> conditionTypeConditionContextEntry : typeToConditionContext.entrySet()) {
             ConditionContext conditionContext = conditionTypeConditionContextEntry.getValue();
             if (usePieceBounds) {
                 for (StructurePiece piece : structureStart.getPieces()) {
@@ -180,7 +231,7 @@ public class StructureStartProtection {
             }
         }
 
-        for (Map.Entry<ConditionType, ConditionContext> conditionTypeConditionContextEntry : typeToConditionContext.entrySet()) {
+        for (Map.Entry<ActionType, ConditionContext> conditionTypeConditionContextEntry : typeToConditionContext.entrySet()) {
             ConditionContext conditionContext = conditionTypeConditionContextEntry.getValue();
             if (usePieceBounds) {
                 for (StructurePiece piece : structureStart.getPieces()) {

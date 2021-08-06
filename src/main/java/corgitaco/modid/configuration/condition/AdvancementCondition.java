@@ -47,7 +47,7 @@ public class AdvancementCondition extends Condition {
     }
 
     @Override
-    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ConditionType conditionType, List<TranslationTextComponent> requirements) {
+    public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target, ActionType actionType, List<TranslationTextComponent> requirements) {
         AdvancementManager advancements = serverWorld.getServer().getAdvancements();
         if (box.isInside(target)) {
             if (fastAdvancements.isEmpty()) {
