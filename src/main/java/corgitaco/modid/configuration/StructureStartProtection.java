@@ -76,40 +76,28 @@ public class StructureStartProtection {
         if (usePieceBounds) {
             for (StructurePiece piece : structureStart.getPieces()) {
                 for (Condition condition : this.conditions) {
-                    if (conditionContext.requiredPassedConditions <= 0) {
-                        if (!condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                            return false;
-                        }
-                    } else {
 
-                        if (conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
-                            return true;
-                        }
+                    if (conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
+                        return true;
+                    }
 
-                        if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                            globalConditionHits++;
-                        }
+                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
+                        globalConditionHits++;
                     }
                 }
                 for (Condition condition : conditionContext.conditions) {
-                    if (conditionContext.requiredPassedConditions <= 0) {
-                        if (!condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target, type, components)) {
-                            return false;
-                        }
-                    } else {
-                        if (conditionHits == conditionContext.requiredPassedConditions) {
-                            return true;
-                        }
+                    if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
+                        return true;
+                    }
 
-                        if (condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target, type, components)) {
-                            conditionHits++;
-                        }
+                    if (condition.checkIfPasses(playerEntity, world, structureStart, piece.getBoundingBox(), target, type, components)) {
+                        conditionHits++;
                     }
                 }
             }
         } else {
             for (Condition condition : this.conditions) {
-                if (conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
+                if (conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
                     return true;
                 }
 
@@ -119,22 +107,19 @@ public class StructureStartProtection {
             }
 
             for (Condition condition : conditionContext.conditions) {
-                if (conditionContext.requiredPassedConditions <= 0) {
-                    if (!condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                        return false;
-                    }
-                } else {
-                    if (conditionHits == conditionContext.requiredPassedConditions) {
-                        return true;
-                    }
+                if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
+                    return true;
+                }
 
-                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                        conditionHits++;
-                    }
+                if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
+                    conditionHits++;
                 }
             }
         }
-        playerEntity.displayClientMessage(new TranslationTextComponent("Missing: ", components), true);
+
+        for (TranslationTextComponent component : components) {
+            playerEntity.displayClientMessage(component, false);
+        }
 
         return false;
     }
