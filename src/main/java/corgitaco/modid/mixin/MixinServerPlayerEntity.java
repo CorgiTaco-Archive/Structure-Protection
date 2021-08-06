@@ -6,6 +6,7 @@ import corgitaco.modid.configuration.condition.ConditionType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
@@ -25,6 +26,7 @@ public class MixinServerPlayerEntity {
 
     @Inject(method = "openMenu", at = @At("HEAD"), cancellable = true)
     private void protectContainers(INamedContainerProvider provider, CallbackInfoReturnable<OptionalInt> cir) {
+        BlockPos pos;
         if (provider instanceof TileEntity) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
             for (Structure<?> structure : player.level.getChunkAt(player.blockPosition()).getAllReferences().keySet()) {

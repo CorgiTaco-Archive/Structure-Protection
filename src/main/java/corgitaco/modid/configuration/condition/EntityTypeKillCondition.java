@@ -6,6 +6,7 @@ import corgitaco.modid.Main;
 import corgitaco.modid.mixin.access.StructureStartAccess;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -78,6 +79,7 @@ public class EntityTypeKillCondition extends Condition {
 
     private final Object2ObjectArrayMap<Object, KillsTracker> killsLeft = new Object2ObjectArrayMap<>();
     private final Int2ObjectArrayMap<Object2ObjectArrayMap<Object, KillsTracker>> killsLeftByPlayer = new Int2ObjectArrayMap<>();
+    private final TranslationTextComponent types;
 
     //Config
     protected EntityTypeKillCondition(boolean perPlayer, Map<String, KillsTracker> killsLeft) {
@@ -87,6 +89,16 @@ public class EntityTypeKillCondition extends Condition {
     public EntityTypeKillCondition(boolean perPlayer, Object2ObjectArrayMap<Object, KillsTracker> killsLeft) {
         super(perPlayer);
         this.killsLeft.putAll(killsLeft);
+        TranslationTextComponent textComponent = null;
+
+        for (Object object : this.killsLeft.keySet()) {
+            if (textComponent == null) {
+                textComponent = getComponentForType(object);
+            } else {
+                textComponent.append(getComponentForType(object));
+            }
+        }
+        this.types = textComponent;
     }
 
 
@@ -108,6 +120,25 @@ public class EntityTypeKillCondition extends Condition {
                 this.killsLeftByPlayer.computeIfAbsent(uuid.intValue(), (uuid1) -> new Object2ObjectArrayMap<>()).put(type(s), killsTracker);
             }));
         });
+        TranslationTextComponent textComponent = null;
+
+        for (Object object : this.killsLeft.keySet()) {
+            if (textComponent == null) {
+                textComponent = getComponentForType(object);
+            } else {
+                textComponent.append(", ").append(getComponentForType(object));
+            }
+        }
+        this.types = textComponent;
+    }
+
+    public static TranslationTextComponent getComponentForType(Object object) {
+        if (object instanceof EntityType<?>) {
+            return new TranslationTextComponent(((EntityType<?>) object).getDescriptionId());
+        } else if (object instanceof EntityClassification) {
+            return CATEGORY_TRANSLATION.get(object);
+        }
+        throw new IllegalArgumentException("Illegal kill key type class: " + object.getClass().getSimpleName());
     }
 
     @Nullable
@@ -182,7 +213,7 @@ public class EntityTypeKillCondition extends Condition {
     }
 
 
-        private void setDefaultsAndUpdate(StructureStartAccess structureStart, KillsTracker killsTracker, boolean update) {
+    private void setDefaultsAndUpdate(StructureStartAccess structureStart, KillsTracker killsTracker, boolean update) {
         if (killsTracker.getKillsLeftDefault() == -1) {
             killsTracker.setKillsLeftDefault(structureStart.getRandom().nextInt(killsTracker.getMaxKillsLeft() - killsTracker.getMinKillsLeft() + 1) + killsTracker.getMinKillsLeft());
         }
@@ -203,7 +234,7 @@ public class EntityTypeKillCondition extends Condition {
                 for (Map.Entry<Object, KillsTracker> entry : this.killsLeft.entrySet()) {
                     int killsLeft = entry.getValue().getKillsLeft();
                     if (killsLeft > 0) {
-                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.structurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
+                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.structurekillsleft", killsLeft, this.types));
                         return false;
                     }
                 }
@@ -222,7 +253,9 @@ public class EntityTypeKillCondition extends Condition {
                 for (Map.Entry<Object, KillsTracker> entry1 : killsLeftByPlayer.entrySet()) {
                     int killsLeft = entry1.getValue().getKillsLeft();
                     if (killsLeft > 0) {
-                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.playerstructurekillsleft", killsLeft, "", type.getActionTranslationComponent()));
+
+
+                        remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.playerstructurekillsleft", killsLeft, this.types));
                         return false;
                     }
                 }

@@ -62,13 +62,22 @@ public class AdvancementCondition extends Condition {
             }
 
             boolean missingAdvancement = false;
+            TranslationTextComponent component = null;
             for (Advancement advancement : fastAdvancements) {
                 AdvancementProgress advancementProgress = playerEntity.getAdvancements().getOrStartProgress(advancement);
 
                 if (!advancementProgress.isDone()) {
                     missingAdvancement = true;
-                    requirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.advancement", advancement.getChatComponent(), conditionType.getActionTranslationComponent()));
+                    if (component == null) {
+                        component = new TranslationTextComponent(Main.MOD_ID + ".condition.advancement", advancement.getChatComponent());
+                    } else {
+                        component.append(", ").append(advancement.getChatComponent());
+                    }
                 }
+            }
+            if (component != null) {
+                component.append(".");
+                requirements.add(component);
             }
 
             return missingAdvancement;

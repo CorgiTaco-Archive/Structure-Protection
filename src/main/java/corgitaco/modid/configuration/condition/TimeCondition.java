@@ -2,6 +2,7 @@ package corgitaco.modid.configuration.condition;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import corgitaco.modid.Main;
 import corgitaco.modid.mixin.access.StructureStartAccess;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -86,9 +87,26 @@ public class TimeCondition extends Condition {
                     }
                     return defaultTimeLeftInTicks;
                 });
-                return timeLeft == 0;
+                boolean passes = timeLeft <= 0;
+
+                if (!passes) {
+                    requirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.time", String.format("%.2f", (double) timeLeft / 24000)));
+                }
+                return passes;
             } else {
-                return this.timeLeft == 0;
+                if (this.timeLeft == -1) {
+                    if (defaultTimeLeftInTicks == -1) {
+                        defaultTimeLeftInTicks = ((StructureStartAccess) structureStart).getRandom().nextInt(this.maxTimeInTicks - this.minTimeInTicks + 1) + this.minTimeInTicks;
+                    }
+                    this.timeLeft = defaultTimeLeftInTicks;
+                }
+
+                boolean passes = this.timeLeft <= 0;
+
+                if (!passes) {
+                    requirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.time", String.format("%.2f", (double) timeLeft / 24000D)));
+                }
+                return passes;
             }
         }
         return true;
@@ -99,7 +117,7 @@ public class TimeCondition extends Condition {
     @Override
     public void playerTick(ServerPlayerEntity player, StructureStart<?> structureStart, MutableBoundingBox box) {
         long gameTime = player.getLevel().getGameTime();
-        if (lastGameTime != gameTime) {
+        if (lastGameTime != gameTime && timeLeft > 0) {
             this.timeLeft--;
             lastGameTime = gameTime;
         }

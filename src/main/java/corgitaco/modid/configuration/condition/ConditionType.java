@@ -5,6 +5,8 @@ import com.mojang.serialization.Codec;
 import corgitaco.modid.Main;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
@@ -23,7 +25,7 @@ public enum ConditionType implements IStringSerializable {
         }
     });
 
-    private final TranslationTextComponent actionTranslationComponent = new TranslationTextComponent(Main.MOD_ID + ".conditiontype.action." + name().toLowerCase());
+    private final IFormattableTextComponent actionTranslationComponent = new TranslationTextComponent(Main.MOD_ID + ".conditiontype.action." + name().toLowerCase()).withStyle(TextFormatting.RED);
 
     @Nullable
     public static ConditionType getTypeFromId(String idIn) {
@@ -35,7 +37,7 @@ public enum ConditionType implements IStringSerializable {
         return this.name();
     }
 
-    public TranslationTextComponent getActionTranslationComponent() {
+    public IFormattableTextComponent getActionTranslationComponent() {
         return actionTranslationComponent;
     }
 }

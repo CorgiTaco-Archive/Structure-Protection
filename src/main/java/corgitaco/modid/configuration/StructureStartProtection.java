@@ -69,6 +69,10 @@ public class StructureStartProtection {
     }
 
     public boolean conditionsMet(ServerPlayerEntity playerEntity, ServerWorld world, StructureStart<?> structureStart, BlockPos target, ConditionType type) {
+        if (playerEntity.isCreative()) {
+            return true;
+        }
+
         ArrayList<TranslationTextComponent> components = new ArrayList<>();
         int conditionHits = 0;
         int globalConditionHits = 0;
@@ -125,6 +129,7 @@ public class StructureStartProtection {
             }
         }
 
+        playerEntity.displayClientMessage(new TranslationTextComponent("modid.condition.missing", type.getActionTranslationComponent()), false);
         for (TranslationTextComponent component : components) {
             playerEntity.displayClientMessage(component, false);
         }
