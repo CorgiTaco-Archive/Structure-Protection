@@ -2,6 +2,7 @@ package corgitaco.modid.mixin;
 
 import corgitaco.modid.StructureProtector;
 import corgitaco.modid.configuration.StructureStartProtection;
+import corgitaco.modid.configuration.condition.ConditionType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -33,7 +34,7 @@ public class MixinItemStack {
                 Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
                 structureStart.ifPresent(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start, itemUseContext.getClickedPos())) {
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start, itemUseContext.getClickedPos(), ConditionType.BLOCK_PLACE)) {
                         player.displayClientMessage(new TranslationTextComponent("No bad"), true);
                         cir.setReturnValue(ActionResultType.FAIL);
                     }

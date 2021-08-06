@@ -8,6 +8,7 @@
     "MixinDataPackRegistries",
     "MixinItemStack",
     "MixinLivingEntity",
+    "MixinServerPlayerEntity",
     "MixinStructure",
     "MixinStructureStart",
     "access.RegistryAccess",

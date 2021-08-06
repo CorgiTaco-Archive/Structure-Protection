@@ -28,13 +28,13 @@ public class EntityTypeKillCondition extends Condition {
     public static final Codec<EntityTypeKillCondition> CONFIG_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.BOOL.fieldOf("perPlayer").forGetter((killCondition) -> {
             return killCondition.isPerPlayer();
-        }), Codec.unboundedMap(Codec.STRING, KillsLeftTracker.CONFIG_CODEC).fieldOf("killsLeft").forGetter((killCondition) -> {
-            Map<String, KillsLeftTracker> serializable = new Object2ObjectArrayMap<>();
-            killCondition.killsLeft.forEach((o, killsLeftTracker) -> {
+        }), Codec.unboundedMap(Codec.STRING, KillsTracker.CONFIG_CODEC).fieldOf("killTracker").forGetter((killCondition) -> {
+            Map<String, KillsTracker> serializable = new Object2ObjectArrayMap<>();
+            killCondition.killsLeft.forEach((o, killsTracker) -> {
                 if (o instanceof EntityClassification) {
-                    serializable.put("category/" + o.toString(), killsLeftTracker);
+                    serializable.put("category/" + o.toString(), killsTracker);
                 } else if (o instanceof EntityType) {
-                    serializable.put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsLeftTracker);
+                    serializable.put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsTracker);
                 } else {
                     throw new IllegalArgumentException("Illegal kill key type class: " + o.getClass().getSimpleName());
                 }
@@ -46,26 +46,26 @@ public class EntityTypeKillCondition extends Condition {
     public static final Codec<EntityTypeKillCondition> DISK_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.BOOL.fieldOf("perPlayer").forGetter((killCondition) -> {
             return killCondition.isPerPlayer();
-        }), Codec.unboundedMap(Codec.STRING, KillsLeftTracker.DISK_CODEC).fieldOf("minKillsLeft").forGetter((killCondition) -> {
-            Map<String, KillsLeftTracker> serializable = new Object2ObjectArrayMap<>();
-            killCondition.killsLeft.forEach((o, killsLeftTracker) -> {
+        }), Codec.unboundedMap(Codec.STRING, KillsTracker.DISK_CODEC).fieldOf("killTracker").forGetter((killCondition) -> {
+            Map<String, KillsTracker> serializable = new Object2ObjectArrayMap<>();
+            killCondition.killsLeft.forEach((o, killsTracker) -> {
                 if (o instanceof EntityClassification) {
-                    serializable.put("category/" + o.toString(), killsLeftTracker);
+                    serializable.put("category/" + o.toString(), killsTracker);
                 } else if (o instanceof EntityType) {
-                    serializable.put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsLeftTracker);
+                    serializable.put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsTracker);
                 } else {
                     throw new IllegalArgumentException("Illegal kill key type class: " + o.getClass().getSimpleName());
                 }
             });
             return serializable;
-        }), Codec.unboundedMap(Codec.INT, Codec.unboundedMap(Codec.STRING, KillsLeftTracker.DISK_CODEC)).fieldOf("killsByPlayer").forGetter((killCondition) -> {
-            Map<Integer, Map<String, KillsLeftTracker>> serializable = new Int2ObjectArrayMap<>();
+        }), Codec.unboundedMap(Codec.INT, Codec.unboundedMap(Codec.STRING, KillsTracker.DISK_CODEC)).fieldOf("playerKillTracker").forGetter((killCondition) -> {
+            Map<Integer, Map<String, KillsTracker>> serializable = new Int2ObjectArrayMap<>();
             killCondition.killsLeftByPlayer.forEach((player, kills) -> {
-                kills.forEach(((o, killsLeftTracker) -> {
+                kills.forEach(((o, killsTracker) -> {
                     if (o instanceof EntityClassification) {
-                        serializable.computeIfAbsent(player.intValue(), (player1) -> new Object2ObjectArrayMap<>()).put("category/" + o.toString(), killsLeftTracker);
+                        serializable.computeIfAbsent(player.intValue(), (player1) -> new Object2ObjectArrayMap<>()).put("category/" + o.toString(), killsTracker);
                     } else if (o instanceof EntityType) {
-                        serializable.computeIfAbsent(player.intValue(), (player1) -> new Object2ObjectArrayMap<>()).put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsLeftTracker);
+                        serializable.computeIfAbsent(player.intValue(), (player1) -> new Object2ObjectArrayMap<>()).put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsTracker);
                     } else {
                         throw new IllegalArgumentException("Illegal kill key type class: " + o.getClass().getSimpleName());
                     }
@@ -76,22 +76,22 @@ public class EntityTypeKillCondition extends Condition {
     });
 
 
-    private final Object2ObjectArrayMap<Object, KillsLeftTracker> killsLeft = new Object2ObjectArrayMap<>();
-    private final Int2ObjectArrayMap<Object2ObjectArrayMap<Object, KillsLeftTracker>> killsLeftByPlayer = new Int2ObjectArrayMap<>();
+    private final Object2ObjectArrayMap<Object, KillsTracker> killsLeft = new Object2ObjectArrayMap<>();
+    private final Int2ObjectArrayMap<Object2ObjectArrayMap<Object, KillsTracker>> killsLeftByPlayer = new Int2ObjectArrayMap<>();
 
     //Config
-    protected EntityTypeKillCondition(boolean perPlayer, Map<String, KillsLeftTracker> killsLeft) {
+    protected EntityTypeKillCondition(boolean perPlayer, Map<String, KillsTracker> killsLeft) {
         this(perPlayer, killsLeft, new Object2ObjectArrayMap<>());
     }
 
-    public EntityTypeKillCondition(boolean perPlayer, Object2ObjectArrayMap<Object, KillsLeftTracker> killsLeft) {
+    public EntityTypeKillCondition(boolean perPlayer, Object2ObjectArrayMap<Object, KillsTracker> killsLeft) {
         super(perPlayer);
         this.killsLeft.putAll(killsLeft);
     }
 
 
     // Disk
-    private EntityTypeKillCondition(boolean perPlayer, Map<String, KillsLeftTracker> killsLeft, Map<Integer, Map<String, KillsLeftTracker>> killsLeftByPlayer) {
+    private EntityTypeKillCondition(boolean perPlayer, Map<String, KillsTracker> killsLeft, Map<Integer, Map<String, KillsTracker>> killsLeftByPlayer) {
         super(perPlayer);
         Map<EntityClassification, List<EntityType<?>>> mobCategoryEntityTypes = new EnumMap<>(EntityClassification.class);
 
@@ -99,13 +99,13 @@ public class EntityTypeKillCondition extends Condition {
             mobCategoryEntityTypes.computeIfAbsent(entityType.getCategory(), (mobCategory -> new ArrayList<>())).add(entityType);
         }
 
-        killsLeft.forEach((s, killsLeftTracker) -> {
-            this.killsLeft.put(type(s), killsLeftTracker);
+        killsLeft.forEach((s, killsTracker) -> {
+            this.killsLeft.put(type(s), killsTracker);
         });
 
         killsLeftByPlayer.forEach((uuid, stringKillsLeftTrackerMap) -> {
-            stringKillsLeftTrackerMap.forEach(((s, killsLeftTracker) -> {
-                this.killsLeftByPlayer.computeIfAbsent(uuid.intValue(), (uuid1) -> new Object2ObjectArrayMap<>()).put(type(s), killsLeftTracker);
+            stringKillsLeftTrackerMap.forEach(((s, killsTracker) -> {
+                this.killsLeftByPlayer.computeIfAbsent(uuid.intValue(), (uuid1) -> new Object2ObjectArrayMap<>()).put(type(s), killsTracker);
             }));
         });
     }
@@ -147,23 +147,23 @@ public class EntityTypeKillCondition extends Condition {
 
             EntityType<?> dyingType = dyingEntity.getType();
             if (this.killsLeft.containsKey(dyingType)) {
-                KillsLeftTracker killsLeftTracker = this.killsLeft.get(dyingType);
-                setDefaultsAndUpdate((StructureStartAccess) structureStart, killsLeftTracker);
+                KillsTracker killsTracker = this.killsLeft.get(dyingType);
+                setDefaultsAndUpdate((StructureStartAccess) structureStart, killsTracker);
 
             } else if (this.killsLeft.containsKey(dyingType.getCategory())) {
-                KillsLeftTracker killsLeftTracker = this.killsLeft.get(dyingType.getCategory());
-                setDefaultsAndUpdate((StructureStartAccess) structureStart, killsLeftTracker);
+                KillsTracker killsTracker = this.killsLeft.get(dyingType.getCategory());
+                setDefaultsAndUpdate((StructureStartAccess) structureStart, killsTracker);
             }
 
 
             int playerUUIDHash = killCredit.getUUID().hashCode();
 
 
-            Object2ObjectArrayMap<Object, KillsLeftTracker> playerKillsLeft = this.killsLeftByPlayer.computeIfAbsent(playerUUIDHash, (uuid -> {
-                Object2ObjectArrayMap<Object, KillsLeftTracker> playerTracker = new Object2ObjectArrayMap<>();
+            Object2ObjectArrayMap<Object, KillsTracker> playerKillsLeft = this.killsLeftByPlayer.computeIfAbsent(playerUUIDHash, (uuid -> {
+                Object2ObjectArrayMap<Object, KillsTracker> playerTracker = new Object2ObjectArrayMap<>();
 
-                this.killsLeft.forEach((condition, killsLeftTracker) -> {
-                    playerTracker.put(condition, new KillsLeftTracker(killsLeftTracker.getMinKillsLeft(), killsLeftTracker.getMaxKillsLeft(), killsLeftTracker.getKillsLeftDefault(), killsLeftTracker.getKillsLeftDefault()));
+                this.killsLeft.forEach((condition, killsTracker) -> {
+                    playerTracker.put(condition, new KillsTracker(killsTracker.getMinKillsLeft(), killsTracker.getMaxKillsLeft(), killsTracker.getKillsLeftDefault(), killsTracker.getKillsLeftDefault()));
                 });
 
                 return playerTracker;
@@ -177,22 +177,22 @@ public class EntityTypeKillCondition extends Condition {
         }
     }
 
-    private void setDefaultsAndUpdate(StructureStartAccess structureStart, KillsLeftTracker killsLeftTracker) {
-        setDefaultsAndUpdate(structureStart, killsLeftTracker, true);
+    private void setDefaultsAndUpdate(StructureStartAccess structureStart, KillsTracker killsTracker) {
+        setDefaultsAndUpdate(structureStart, killsTracker, true);
     }
 
 
-        private void setDefaultsAndUpdate(StructureStartAccess structureStart, KillsLeftTracker killsLeftTracker, boolean update) {
-        if (killsLeftTracker.getKillsLeftDefault() == -1) {
-            killsLeftTracker.setKillsLeftDefault(structureStart.getRandom().nextInt(killsLeftTracker.getMaxKillsLeft() - killsLeftTracker.getMinKillsLeft() + 1) + killsLeftTracker.getMinKillsLeft());
+        private void setDefaultsAndUpdate(StructureStartAccess structureStart, KillsTracker killsTracker, boolean update) {
+        if (killsTracker.getKillsLeftDefault() == -1) {
+            killsTracker.setKillsLeftDefault(structureStart.getRandom().nextInt(killsTracker.getMaxKillsLeft() - killsTracker.getMinKillsLeft() + 1) + killsTracker.getMinKillsLeft());
         }
 
-        if (killsLeftTracker.getKillsLeft() == -1) {
-            killsLeftTracker.setKillsLeft(killsLeftTracker.getKillsLeftDefault());
+        if (killsTracker.getKillsLeft() == -1) {
+            killsTracker.setKillsLeft(killsTracker.getKillsLeftDefault());
         }
 
         if (update) {
-            killsLeftTracker.setKillsLeft(killsLeftTracker.getKillsLeft() - 1);
+            killsTracker.setKillsLeft(killsTracker.getKillsLeft() - 1);
         }
     }
 
@@ -200,24 +200,24 @@ public class EntityTypeKillCondition extends Condition {
     public boolean checkIfPasses(ServerPlayerEntity playerEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box, BlockPos target) {
         if (box.isInside(target)) {
             if (!isPerPlayer()) {
-                for (Map.Entry<Object, KillsLeftTracker> entry : this.killsLeft.entrySet()) {
+                for (Map.Entry<Object, KillsTracker> entry : this.killsLeft.entrySet()) {
                     if (entry.getValue().getKillsLeft() > 0) {
                         return false;
                     }
                 }
             } else {
-                Object2ObjectArrayMap<Object, KillsLeftTracker> killsLeftByPlayer = this.killsLeftByPlayer.computeIfAbsent(playerEntity.getUUID().hashCode(), (uuid) -> {
-                    Object2ObjectArrayMap<Object, KillsLeftTracker> playerTracker = new Object2ObjectArrayMap<>();
-                    this.killsLeft.forEach((condition, killsLeftTracker) -> {
-                        KillsLeftTracker killsLeftTracker1 = new KillsLeftTracker(killsLeftTracker.getMinKillsLeft(), killsLeftTracker.getMaxKillsLeft(), killsLeftTracker.getKillsLeftDefault(), killsLeftTracker.getKillsLeftDefault());
-                        playerTracker.put(condition, killsLeftTracker1);
-                        setDefaultsAndUpdate((StructureStartAccess) structureStart, killsLeftTracker1, false);
+                Object2ObjectArrayMap<Object, KillsTracker> killsLeftByPlayer = this.killsLeftByPlayer.computeIfAbsent(playerEntity.getUUID().hashCode(), (uuid) -> {
+                    Object2ObjectArrayMap<Object, KillsTracker> playerTracker = new Object2ObjectArrayMap<>();
+                    this.killsLeft.forEach((condition, killsTracker) -> {
+                        KillsTracker killsTracker1 = new KillsTracker(killsTracker.getMinKillsLeft(), killsTracker.getMaxKillsLeft(), killsTracker.getKillsLeftDefault(), killsTracker.getKillsLeftDefault());
+                        playerTracker.put(condition, killsTracker1);
+                        setDefaultsAndUpdate((StructureStartAccess) structureStart, killsTracker1, false);
                     });
                     return playerTracker;
                 });
 
 
-                for (Map.Entry<Object, KillsLeftTracker> entry1 : killsLeftByPlayer.entrySet()) {
+                for (Map.Entry<Object, KillsTracker> entry1 : killsLeftByPlayer.entrySet()) {
                     if (entry1.getValue().getKillsLeft() > 0) {
                         return false;
                     }
@@ -232,26 +232,26 @@ public class EntityTypeKillCondition extends Condition {
         return new TranslationTextComponent("You still need to kill: %s mobs to build/destroy blocks here...", this.killsLeft);
     }
 
-    public static class KillsLeftTracker {
+    public static class KillsTracker {
 
-        public static Codec<KillsLeftTracker> CONFIG_CODEC = RecordCodecBuilder.create((builder) -> {
-            return builder.group(Codec.INT.fieldOf("minKillsLeft").forGetter((killCondition) -> {
+        public static Codec<KillsTracker> CONFIG_CODEC = RecordCodecBuilder.create((builder) -> {
+            return builder.group(Codec.INT.fieldOf("minAllowedKills").forGetter((killCondition) -> {
                 return killCondition.minKillsLeft;
-            }), Codec.INT.fieldOf("maxKillsLeft").forGetter((killCondition) -> {
+            }), Codec.INT.fieldOf("maxAllowedKills").forGetter((killCondition) -> {
                 return killCondition.maxKillsLeft;
-            })).apply(builder, KillsLeftTracker::new);
+            })).apply(builder, KillsTracker::new);
         });
 
-        public static final Codec<KillsLeftTracker> DISK_CODEC = RecordCodecBuilder.create((builder) -> {
-            return builder.group(Codec.INT.fieldOf("minKillsLeft").forGetter((killCondition) -> {
+        public static final Codec<KillsTracker> DISK_CODEC = RecordCodecBuilder.create((builder) -> {
+            return builder.group(Codec.INT.fieldOf("minAllowedKills").forGetter((killCondition) -> {
                 return killCondition.minKillsLeft;
-            }), Codec.INT.fieldOf("maxKillsLeft").forGetter((killCondition) -> {
+            }), Codec.INT.fieldOf("maxAllowedKills").forGetter((killCondition) -> {
                 return killCondition.maxKillsLeft;
             }), Codec.INT.fieldOf("killsLeftDefault").forGetter((killCondition) -> {
                 return killCondition.killsLeftDefault;
             }), Codec.INT.fieldOf("killsLeft").forGetter((killCondition) -> {
                 return killCondition.killsLeft;
-            })).apply(builder, KillsLeftTracker::new);
+            })).apply(builder, KillsTracker::new);
         });
 
         private final int minKillsLeft;
@@ -259,11 +259,11 @@ public class EntityTypeKillCondition extends Condition {
         private int killsLeft;
         private int killsLeftDefault;
 
-        public KillsLeftTracker(int minKillsLeft, int maxKillsLeft) {
+        public KillsTracker(int minKillsLeft, int maxKillsLeft) {
             this(minKillsLeft, maxKillsLeft, -1, -1);
         }
 
-        private KillsLeftTracker(int minKillsLeft, int maxKillsLeft, int killsLeft, int killsLeftDefault) {
+        private KillsTracker(int minKillsLeft, int maxKillsLeft, int killsLeft, int killsLeftDefault) {
             this.minKillsLeft = minKillsLeft;
             this.maxKillsLeft = maxKillsLeft;
             this.killsLeft = killsLeft;
