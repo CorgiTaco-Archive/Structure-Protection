@@ -9,15 +9,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.SectionPos;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.util.Optional;
 
 @Mod.EventBusSubscriber(modid = Main.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEntryPoint {
@@ -26,12 +23,11 @@ public class ForgeEntryPoint {
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
         Entity entity = event.getEntity();
         if (entity instanceof PlayerEntity) {
-            for (Structure<?> structure : entity.level.getChunkAt(entity.blockPosition()).getAllReferences().keySet()) {
-                Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
-                structureStart.ifPresent(start -> {
+            World level = entity.level;
+            for (Structure<?> structure : level.getChunkAt(entity.blockPosition()).getAllReferences().keySet()) {
+                ((ServerWorld) level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).filter(structureStart1 -> structureStart1.getBoundingBox().isInside(entity.blockPosition())).forEach(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos(), ActionType.BLOCK_PLACE)) {
-                        ((ServerPlayerEntity) entity).displayClientMessage(new TranslationTextComponent("No bad"), true);
+                    if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) level, start, event.getPos(), ActionType.BLOCK_PLACE)) {
                         event.setCanceled(true);
                     }
                 });
@@ -42,11 +38,11 @@ public class ForgeEntryPoint {
     @SubscribeEvent
     public static void onBlockDestroy(BlockEvent.BreakEvent event) {
         Entity entity = event.getPlayer();
-        for (Structure<?> structure : entity.level.getChunkAt(entity.blockPosition()).getAllReferences().keySet()) {
-            Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) entity.level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).findFirst();
-            structureStart.ifPresent(start -> {
+        World level = entity.level;
+        for (Structure<?> structure : level.getChunkAt(entity.blockPosition()).getAllReferences().keySet()) {
+            ((ServerWorld) level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).filter(structureStart1 -> structureStart1.getBoundingBox().isInside(entity.blockPosition())).forEach(start -> {
                 StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) entity.level, start, event.getPos(), ActionType.BLOCK_BREAK)) {
+                if (protector != null && !protector.conditionsMet((ServerPlayerEntity) entity, (ServerWorld) level, start, event.getPos(), ActionType.BLOCK_BREAK)) {
                     event.setCanceled(true);
                 }
             });

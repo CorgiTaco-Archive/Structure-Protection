@@ -13,6 +13,7 @@ import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,8 +23,10 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 @Mixin(ServerPlayerEntity.class)
-public class MixinServerPlayerEntity {
+public abstract class MixinServerPlayerEntity {
 
+
+    @Shadow public abstract ServerWorld getLevel();
 
     @Inject(method = "openMenu", at = @At("HEAD"), cancellable = true)
     private void protectContainers(INamedContainerProvider provider, CallbackInfoReturnable<OptionalInt> cir) {
@@ -36,10 +39,10 @@ public class MixinServerPlayerEntity {
         }
         if (pos != null) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-            for (Structure<?> structure : player.level.getChunkAt(player.blockPosition()).getAllReferences().keySet()) {
-                Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) player.level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
+            ServerWorld level = this.getLevel();
+            for (Structure<?> structure : level.getChunkAt(player.blockPosition()).getAllReferences().keySet()) {
                 BlockPos finalPos = pos;
-                structureStart.ifPresent(start -> {
+                level.startsForFeature(SectionPos.of(player.blockPosition()), structure).filter(structureStart1 -> structureStart1.getBoundingBox().isInside(player.blockPosition())).forEach(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
                     if (protector != null && !protector.conditionsMet(player, (ServerWorld) player.level, start, finalPos, ActionType.CONTAINER_OPEN)) {
                         cir.setReturnValue(OptionalInt.empty());

@@ -11,14 +11,11 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Optional;
 
 @Mixin(ItemStack.class)
 public class MixinItemStack {
@@ -30,8 +27,7 @@ public class MixinItemStack {
         if (!level.isClientSide) {
             PlayerEntity player = itemUseContext.getPlayer();
             for (Structure<?> structure : level.getChunkAt(player.blockPosition()).getAllReferences().keySet()) {
-                Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
-                structureStart.ifPresent(start -> {
+                ((ServerWorld) level).startsForFeature(SectionPos.of(player.blockPosition()), structure).filter(structureStart1 -> structureStart1.getBoundingBox().isInside(player.blockPosition())).forEach(start -> {
                     StructureStartProtection protector = ((StructureProtector) start).getProtector();
                     if (protector != null && !protector.conditionsMet((ServerPlayerEntity) player, (ServerWorld) player.level, start, itemUseContext.getClickedPos(), ActionType.BLOCK_PLACE)) {
                         cir.setReturnValue(ActionResultType.FAIL);
