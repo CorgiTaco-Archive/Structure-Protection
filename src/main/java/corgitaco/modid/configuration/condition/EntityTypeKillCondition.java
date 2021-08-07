@@ -4,12 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.modid.Main;
 import corgitaco.modid.mixin.access.StructureStartAccess;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import corgitaco.modid.util.UUIDStringCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -58,14 +57,14 @@ public class EntityTypeKillCondition extends Condition {
                 }
             });
             return serializable;
-        }), Codec.unboundedMap(Codec.INT, Codec.unboundedMap(Codec.STRING, KillsTracker.DISK_CODEC)).fieldOf("playerKillTracker").forGetter((killCondition) -> {
-            Map<Integer, Map<String, KillsTracker>> serializable = new Int2ObjectArrayMap<>();
+        }), Codec.unboundedMap(UUIDStringCodec.CODEC, Codec.unboundedMap(Codec.STRING, KillsTracker.DISK_CODEC)).fieldOf("playerKillTracker").forGetter((killCondition) -> {
+            Map<UUID, Map<String, KillsTracker>> serializable = new HashMap<>();
             killCondition.killsLeftByPlayer.forEach((player, kills) -> {
                 kills.forEach(((o, killsTracker) -> {
                     if (o instanceof EntityClassification) {
-                        serializable.computeIfAbsent(player.intValue(), (player1) -> new Object2ObjectArrayMap<>()).put("category/" + o.toString(), killsTracker);
+                        serializable.computeIfAbsent(player, (player1) -> new HashMap<>()).put("category/" + o.toString(), killsTracker);
                     } else if (o instanceof EntityType) {
-                        serializable.computeIfAbsent(player.intValue(), (player1) -> new Object2ObjectArrayMap<>()).put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsTracker);
+                        serializable.computeIfAbsent(player, (player1) -> new HashMap<>()).put(Registry.ENTITY_TYPE.getKey((EntityType<?>) o).toString(), killsTracker);
                     } else {
                         throw new IllegalArgumentException("Illegal kill key type class: " + o.getClass().getSimpleName());
                     }
@@ -77,7 +76,7 @@ public class EntityTypeKillCondition extends Condition {
 
 
     private final Object2ObjectArrayMap<Object, KillsTracker> killsLeft = new Object2ObjectArrayMap<>();
-    private final Int2ObjectArrayMap<Object2ObjectArrayMap<Object, KillsTracker>> killsLeftByPlayer = new Int2ObjectArrayMap<>();
+    private final Object2ObjectArrayMap<UUID, Object2ObjectArrayMap<Object, KillsTracker>> killsLeftByPlayer = new Object2ObjectArrayMap<>();
     private final TranslationTextComponent types;
 
     //Config
@@ -102,7 +101,7 @@ public class EntityTypeKillCondition extends Condition {
 
 
     // Disk
-    private EntityTypeKillCondition(boolean perPlayer, Map<String, KillsTracker> killsLeft, Map<Integer, Map<String, KillsTracker>> killsLeftByPlayer) {
+    private EntityTypeKillCondition(boolean perPlayer, Map<String, KillsTracker> killsLeft, Map<UUID, Map<String, KillsTracker>> killsLeftByPlayer) {
         super(perPlayer);
         Map<EntityClassification, List<EntityType<?>>> mobCategoryEntityTypes = new EnumMap<>(EntityClassification.class);
 
@@ -116,7 +115,7 @@ public class EntityTypeKillCondition extends Condition {
 
         killsLeftByPlayer.forEach((uuid, stringKillsLeftTrackerMap) -> {
             stringKillsLeftTrackerMap.forEach(((s, killsTracker) -> {
-                this.killsLeftByPlayer.computeIfAbsent(uuid.intValue(), (uuid1) -> new Object2ObjectArrayMap<>()).put(type(s), killsTracker);
+                this.killsLeftByPlayer.computeIfAbsent(uuid, (uuid1) -> new Object2ObjectArrayMap<>()).put(type(s), killsTracker);
             }));
         });
         TranslationTextComponent textComponent = null;
@@ -187,10 +186,10 @@ public class EntityTypeKillCondition extends Condition {
             }
 
 
-            int playerUUIDHash = killCredit.getUUID().hashCode();
+            UUID killCreditUUID = killCredit.getUUID();
 
 
-            Object2ObjectArrayMap<Object, KillsTracker> playerKillsLeft = this.killsLeftByPlayer.computeIfAbsent(playerUUIDHash, (uuid -> {
+            Object2ObjectArrayMap<Object, KillsTracker> playerKillsLeft = this.killsLeftByPlayer.computeIfAbsent(killCreditUUID, (uuid -> {
                 Object2ObjectArrayMap<Object, KillsTracker> playerTracker = new Object2ObjectArrayMap<>();
 
                 this.killsLeft.forEach((condition, killsTracker) -> {
@@ -242,7 +241,7 @@ public class EntityTypeKillCondition extends Condition {
                     }
                 }
             } else {
-                Object2ObjectArrayMap<Object, KillsTracker> killsLeftByPlayer = this.killsLeftByPlayer.computeIfAbsent(playerEntity.getUUID().hashCode(), (uuid) -> {
+                Object2ObjectArrayMap<Object, KillsTracker> killsLeftByPlayer = this.killsLeftByPlayer.computeIfAbsent(playerEntity.getUUID(), (uuid) -> {
                     Object2ObjectArrayMap<Object, KillsTracker> playerTracker = new Object2ObjectArrayMap<>();
                     this.killsLeft.forEach((condition, killsTracker) -> {
                         KillsTracker killsTracker1 = new KillsTracker(killsTracker.getMinKillsLeft(), killsTracker.getMaxKillsLeft(), killsTracker.getKillsLeftDefault(), killsTracker.getKillsLeftDefault());

@@ -128,6 +128,10 @@ public class StructureStartProtection {
         int conditionHits = 0;
         int globalConditionHits = 0;
         ConditionContext conditionContext = this.typeToConditionContext.get(type);
+        if (conditionContext == null) {
+            return true;
+        }
+
         if (usePieceBounds) {
             StructurePiece intersectingPiece = null;
             for (StructurePiece piece : structureStart.getPieces()) {

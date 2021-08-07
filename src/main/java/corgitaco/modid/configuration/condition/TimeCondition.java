@@ -4,7 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.modid.Main;
 import corgitaco.modid.mixin.access.StructureStartAccess;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import corgitaco.modid.util.UUIDStringCodec;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
@@ -14,6 +15,7 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class TimeCondition extends Condition {
 
@@ -34,7 +36,7 @@ public class TimeCondition extends Condition {
             return killCondition.minTimeInTicks;
         }), Codec.INT.fieldOf("maxTimeInTicks").forGetter((killCondition) -> {
             return killCondition.maxTimeInTicks;
-        }), Codec.unboundedMap(Codec.INT, Codec.INT).fieldOf("playerTimeLeftInTicks").forGetter((killCondition) -> {
+        }), Codec.unboundedMap(UUIDStringCodec.CODEC, Codec.INT).fieldOf("playerTimeLeftInTicks").forGetter((killCondition) -> {
             return killCondition.playerTimeLeftInTicks;
         }), Codec.INT.fieldOf("defaultTimeLeftInTicks").forGetter((killCondition) -> {
             return killCondition.defaultTimeLeftInTicks;
@@ -45,18 +47,18 @@ public class TimeCondition extends Condition {
 
     private final int minTimeInTicks;
     private final int maxTimeInTicks;
-    private final Int2IntArrayMap playerTimeLeftInTicks = new Int2IntArrayMap();
+    private final Object2IntArrayMap<UUID> playerTimeLeftInTicks = new Object2IntArrayMap<>();
     private int defaultTimeLeftInTicks;
     private int timeLeft;
 
 
     // Config
     public TimeCondition(boolean perPlayer, int minTimeInTicks, int maxTimeInTicks) {
-        this(perPlayer, minTimeInTicks, maxTimeInTicks, new Int2IntArrayMap(), -1, -1);
+        this(perPlayer, minTimeInTicks, maxTimeInTicks, new Object2IntArrayMap<>(), -1, -1);
     }
 
     // Disk
-    private TimeCondition(boolean perPlayer, int minTimeInTicks, int maxTimeInTicks, Map<Integer, Integer> playerTimeLeftInTicks, int defaultTimeLeftInTicks, int timeLeft) {
+    private TimeCondition(boolean perPlayer, int minTimeInTicks, int maxTimeInTicks, Map<UUID, Integer> playerTimeLeftInTicks, int defaultTimeLeftInTicks, int timeLeft) {
         super(perPlayer);
         this.minTimeInTicks = minTimeInTicks;
         this.maxTimeInTicks = maxTimeInTicks;
@@ -80,8 +82,8 @@ public class TimeCondition extends Condition {
         if (box.isInside(target)) {
 
             if (isPerPlayer()) {
-                int uuidHash = entity.getUUID().hashCode();
-                int timeLeft = this.playerTimeLeftInTicks.computeIfAbsent(uuidHash, (uuid) -> {
+                UUID uuid = entity.getUUID();
+                int timeLeft = this.playerTimeLeftInTicks.computeIfAbsent(uuid, (uuid1) -> {
                     if (defaultTimeLeftInTicks == -1) {
                         defaultTimeLeftInTicks = ((StructureStartAccess) structureStart).getRandom().nextInt(this.maxTimeInTicks - this.minTimeInTicks + 1) + this.minTimeInTicks;
                     }
@@ -122,15 +124,15 @@ public class TimeCondition extends Condition {
             lastGameTime = gameTime;
         }
 
-        int uuidHash = player.getUUID().hashCode();
-        int lastTime = this.playerTimeLeftInTicks.computeIfAbsent(uuidHash, (uuid) -> {
+        UUID uuid = player.getUUID();
+        int lastTime = this.playerTimeLeftInTicks.computeIfAbsent(uuid, (uuid1) -> {
             if (defaultTimeLeftInTicks == -1) {
                 defaultTimeLeftInTicks = ((StructureStartAccess) structureStart).getRandom().nextInt(this.maxTimeInTicks - this.minTimeInTicks + 1) + this.minTimeInTicks + 1;
             }
             return defaultTimeLeftInTicks;
         });
         if (lastTime > 0) {
-            this.playerTimeLeftInTicks.put(uuidHash, lastTime - 1);
+            this.playerTimeLeftInTicks.put(uuid, lastTime - 1);
         }
     }
 }
