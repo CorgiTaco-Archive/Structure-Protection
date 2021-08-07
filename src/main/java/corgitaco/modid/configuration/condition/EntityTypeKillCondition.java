@@ -174,7 +174,7 @@ public class EntityTypeKillCondition extends Condition {
     @Override
     public void onEntityDeath(LivingEntity dyingEntity, ServerWorld serverWorld, StructureStart<?> structureStart, MutableBoundingBox box) {
         LivingEntity killCredit = dyingEntity.getKillCredit();
-        if (dyingEntity instanceof MonsterEntity && killCredit != null && killCredit instanceof ServerPlayerEntity && structureStart.getBoundingBox().isInside(killCredit.blockPosition())) {
+        if (killCredit != null && killCredit instanceof ServerPlayerEntity && box.isInside(killCredit.blockPosition())) {
 
             EntityType<?> dyingType = dyingEntity.getType();
             if (this.killsLeft.containsKey(dyingType)) {
@@ -233,8 +233,8 @@ public class EntityTypeKillCondition extends Condition {
             if (!isPerPlayer()) {
                 for (Map.Entry<Object, KillsTracker> entry : this.killsLeft.entrySet()) {
                     KillsTracker killsTracker = entry.getValue();
-                    int killsLeft = killsTracker.getKillsLeft();
                     setDefaultsAndUpdate((StructureStartAccess) structureStart, killsTracker, false);
+                    int killsLeft = killsTracker.getKillsLeft();
 
                     if (killsLeft > 0) {
                         remainingRequirements.add(new TranslationTextComponent(Main.MOD_ID + ".condition.entity_type_kill.structurekillsleft", killsLeft, this.types));
