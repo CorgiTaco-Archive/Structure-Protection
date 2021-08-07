@@ -27,7 +27,7 @@ public abstract class MixinStructureStart<C extends IFeatureConfig> implements S
     private void killsLeft(Structure<C> structure, int x, int z, MutableBoundingBox boundingBox, int i, long seed, CallbackInfo ci) {
         if(StructureProtectorFileLoader.PROTECTOR.containsKey(structure)) {
             // Make sure we create a new instance!
-            this.structureStartProtection = StructureStartProtection.CONFIG_CODEC.decode(NBTDynamicOps.INSTANCE, StructureStartProtection.CONFIG_CODEC.encodeStart(NBTDynamicOps.INSTANCE, StructureProtectorFileLoader.PROTECTOR.get(structure)).result().get()).result().get().getFirst();
+            this.structureStartProtection = StructureStartProtection.CONFIG_CODEC.parse(NBTDynamicOps.INSTANCE, StructureStartProtection.CONFIG_CODEC.encodeStart(NBTDynamicOps.INSTANCE, StructureProtectorFileLoader.PROTECTOR.get(structure)).result().get()).result().get();
         }
     }
 

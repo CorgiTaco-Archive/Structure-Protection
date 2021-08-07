@@ -102,7 +102,7 @@ public class StructureStartProtection {
     public static final Codec<StructureStartProtection> DISK_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.unboundedMap(ActionType.CODEC, ConditionContext.DISK_CODEC).fieldOf("typeConditions").orElse(new Object2ObjectArrayMap<>()).forGetter((structureStartProtection) -> {
             return structureStartProtection.typeToConditionContext;
-        }), Codec.list(Condition.REGISTRY_DISK_CODEC).fieldOf("conditions").orElse(new ArrayList<>()).forGetter((structureStartProtection) -> {
+        }), Codec.list(Condition.REGISTRY_DISK_CODEC).fieldOf("conditions").forGetter((structureStartProtection) -> {
             return structureStartProtection.conditions;
         }), Codec.BOOL.fieldOf("usePieceBounds").forGetter((structureStartProtection) -> {
             return structureStartProtection.usePieceBounds;
