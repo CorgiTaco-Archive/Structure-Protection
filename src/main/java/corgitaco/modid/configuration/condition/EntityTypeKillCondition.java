@@ -279,10 +279,10 @@ public class EntityTypeKillCondition extends Condition {
                 return killCondition.minKillsLeft;
             }), Codec.INT.fieldOf("maxAllowedKills").forGetter((killCondition) -> {
                 return killCondition.maxKillsLeft;
-            }), Codec.INT.fieldOf("killsLeftDefault").forGetter((killCondition) -> {
-                return killCondition.killsLeftDefault;
             }), Codec.INT.fieldOf("killsLeft").forGetter((killCondition) -> {
                 return killCondition.killsLeft;
+            }), Codec.INT.fieldOf("killsLeftDefault").forGetter((killCondition) -> {
+                return killCondition.killsLeftDefault;
             })).apply(builder, KillsTracker::new);
         });
 
