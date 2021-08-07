@@ -24,7 +24,7 @@ public abstract class MixinStructureStart<C extends IFeatureConfig> implements S
     StructureStartProtection structureStartProtection;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void killsLeft(Structure<C> structure, int x, int z, MutableBoundingBox boundingBox, int i, long seed, CallbackInfo ci) {
+    private void createProtectorDefaultFromConfiguration(Structure<C> structure, int x, int z, MutableBoundingBox boundingBox, int i, long seed, CallbackInfo ci) {
         if(StructureProtectorFileLoader.PROTECTOR.containsKey(structure)) {
             // Make sure we create a new instance!
             this.structureStartProtection = StructureStartProtection.CONFIG_CODEC.parse(NBTDynamicOps.INSTANCE, StructureStartProtection.CONFIG_CODEC.encodeStart(NBTDynamicOps.INSTANCE, StructureProtectorFileLoader.PROTECTOR.get(structure)).result().get()).result().get();
@@ -33,7 +33,7 @@ public abstract class MixinStructureStart<C extends IFeatureConfig> implements S
 
 
     @Inject(method = "createTag", at = @At("RETURN"))
-    private void attachConditions(int x, int z, CallbackInfoReturnable<CompoundNBT> cir) {
+    private void saveProtector(int x, int z, CallbackInfoReturnable<CompoundNBT> cir) {
         if (this.structureStartProtection != null) {
             cir.getReturnValue().put("protector", StructureStartProtection.DISK_CODEC.encodeStart(NBTDynamicOps.INSTANCE, structureStartProtection).result().get());
         }
