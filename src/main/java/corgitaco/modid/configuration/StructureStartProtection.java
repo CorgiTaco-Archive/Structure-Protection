@@ -128,9 +128,6 @@ public class StructureStartProtection {
         int conditionHits = 0;
         int globalConditionHits = 0;
         ConditionContext conditionContext = this.typeToConditionContext.get(type);
-        if (conditionContext == null) {
-            return true;
-        }
 
         if (usePieceBounds) {
             StructurePiece intersectingPiece = null;
@@ -145,7 +142,7 @@ public class StructureStartProtection {
             }
 
             for (Condition condition : this.conditions) {
-                if (conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
+                if (conditionContext != null && conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
                     return true;
                 }
 
@@ -153,18 +150,20 @@ public class StructureStartProtection {
                     globalConditionHits++;
                 }
             }
-            for (Condition condition : conditionContext.conditions) {
-                if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
-                    return true;
-                }
+            if (conditionContext != null) {
+                for (Condition condition : conditionContext.conditions) {
+                    if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
+                        return true;
+                    }
 
-                if (condition.checkIfPasses(playerEntity, world, structureStart, intersectingPiece.getBoundingBox(), target, type, components)) {
-                    conditionHits++;
+                    if (condition.checkIfPasses(playerEntity, world, structureStart, intersectingPiece.getBoundingBox(), target, type, components)) {
+                        conditionHits++;
+                    }
                 }
             }
         } else {
             for (Condition condition : this.conditions) {
-                if (conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
+                if (conditionContext != null && conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
                     return true;
                 }
 
@@ -172,14 +171,15 @@ public class StructureStartProtection {
                     globalConditionHits++;
                 }
             }
+            if (conditionContext != null) {
+                for (Condition condition : conditionContext.conditions) {
+                    if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
+                        return true;
+                    }
 
-            for (Condition condition : conditionContext.conditions) {
-                if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
-                    return true;
-                }
-
-                if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                    conditionHits++;
+                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
+                        conditionHits++;
+                    }
                 }
             }
         }
