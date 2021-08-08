@@ -119,6 +119,8 @@ public class StructureStartProtection {
         this.usePieceBounds = usePieceBounds;
     }
 
+    long lastMsgTime;
+
     public boolean conditionsMet(ServerPlayerEntity playerEntity, ServerWorld world, StructureStart<?> structureStart, BlockPos target, ActionType type) {
         if (playerEntity.isCreative()) {
             return true;
@@ -184,9 +186,14 @@ public class StructureStartProtection {
             }
         }
 
-        playerEntity.displayClientMessage(new TranslationTextComponent("modid.condition.missing", type.getActionTranslationComponent()), false);
-        for (TranslationTextComponent component : components) {
-            playerEntity.displayClientMessage(component, false);
+
+        long gameTime = world.getGameTime();
+        if (gameTime - lastMsgTime >= 20) {
+            playerEntity.displayClientMessage(new TranslationTextComponent("modid.condition.missing", type.getActionTranslationComponent()), false);
+            for (TranslationTextComponent component : components) {
+                playerEntity.displayClientMessage(component, false);
+            }
+            lastMsgTime = gameTime;
         }
 
         return false;
