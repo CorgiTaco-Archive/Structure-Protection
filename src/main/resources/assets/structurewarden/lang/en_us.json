@@ -1,0 +1,15 @@
+{
+  "structurewarden.condition.entity_type_kill.structurekillsleft": "• %s entities(types: %s) still need to be killed.",
+  "structurewarden.condition.time": "• Wait %s days.",
+  "structurewarden.condition.advancement": "• Advancement(s): %s",
+  "structurewarden.condition.missing": "You're missing requirements to %s here:",
+  "structurewarden.actiontype.action.block_break": "break blocks",
+  "structurewarden.actiontype.action.block_place": "place blocks",
+  "structurewarden.actiontype.action.container_open": "open containers",
+  "monstercategory.monster": "category/Monster",
+  "monstercategory.creature": "category/Creature",
+  "monstercategory.ambient": "category/Ambient",
+  "monstercategory.water_creature": "category/Water Creature",
+  "monstercategory.water_ambient": "category/Water Ambient",
+  "monstercategory.misc": "category/Misc"
+}

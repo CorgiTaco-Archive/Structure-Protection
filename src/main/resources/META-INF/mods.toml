@@ -3,17 +3,17 @@ loaderVersion = "[33,)"
 license = "LGPLv3"
 issueTrackerURL = ""
 [[mods]]
-modId = "modid"
-version = "1.0"
-displayName = "Mod ID"
+modId = "structurewarden"
+version = "0.0.1"
+displayName = "Structure Warden ID"
 displayURL = ""
 logoFile = "icon.png"
 credits = ""
 authors = "Corgi Taco"
 description = '''
-Description
+A mod that allows the creation of specific conditions that limits what a player may/may not do until said conditions are met.
 '''
-[[dependencies.modid]]
+[[dependencies.structurewarden]]
 modId = "forge"
 mandatory = true
 versionRange = "[33.0.0,)"
