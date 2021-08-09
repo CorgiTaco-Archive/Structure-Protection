@@ -5,7 +5,7 @@ issueTrackerURL = ""
 [[mods]]
 modId = "structurewarden"
 version = "0.0.1"
-displayName = "Structure Warden ID"
+displayName = "Structure Warden"
 displayURL = ""
 logoFile = "icon.png"
 credits = ""
