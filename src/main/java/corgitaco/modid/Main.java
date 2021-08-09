@@ -5,6 +5,7 @@ import corgitaco.modid.configuration.condition.AdvancementCondition;
 import corgitaco.modid.configuration.condition.EntityTypeKillCondition;
 import corgitaco.modid.configuration.condition.TimeCondition;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -16,12 +17,16 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 @Mod(Main.MOD_ID)
 public class Main {
     public static final String MOD_ID = "modid";
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
+
+    public static final String PROTECTOR_NBT_TAG = "protector_v1";
 
     public Main() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();

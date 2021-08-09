@@ -1,5 +1,6 @@
 package corgitaco.modid.mixin;
 
+import corgitaco.modid.Main;
 import corgitaco.modid.StructureProtector;
 import corgitaco.modid.configuration.StructureStartProtection;
 import corgitaco.modid.datapack.StructureProtectorFileLoader;
@@ -39,7 +40,7 @@ public abstract class MixinStructureStart<C extends IFeatureConfig> implements S
     @Inject(method = "createTag", at = @At("RETURN"))
     private void saveProtector(int x, int z, CallbackInfoReturnable<CompoundNBT> cir) {
         if (this.structureStartProtection != null && isValid()) {
-            cir.getReturnValue().put("protector", StructureStartProtection.DISK_CODEC.encodeStart(NBTDynamicOps.INSTANCE, structureStartProtection).result().get());
+            cir.getReturnValue().put(Main.PROTECTOR_NBT_TAG, StructureStartProtection.DISK_CODEC.encodeStart(NBTDynamicOps.INSTANCE, structureStartProtection).result().get());
         }
     }
 
