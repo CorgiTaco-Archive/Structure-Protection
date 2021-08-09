@@ -21,7 +21,7 @@ public class MixinStructure {
     @Inject(method = "loadStaticStart", at = @At("RETURN"))
     private static void loadProtector(TemplateManager manager, CompoundNBT nbt, long seed, CallbackInfoReturnable<StructureStart<?>> cir) {
         if (nbt.contains(Main.PROTECTOR_NBT_TAG)) {
-            ((StructureProtector) cir.getReturnValue()).setProtection(StructureStartProtection.DISK_CODEC.decode(NBTDynamicOps.INSTANCE, nbt.get("protector")).result().get().getFirst());
+            ((StructureProtector) cir.getReturnValue()).setProtection(StructureStartProtection.DISK_CODEC.decode(NBTDynamicOps.INSTANCE, nbt.get(Main.PROTECTOR_NBT_TAG)).result().get().getFirst());
         }
     }
 }
