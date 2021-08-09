@@ -133,7 +133,7 @@ public class StructureStartProtection {
         int globalConditionHits = 0;
 
         @Nullable
-        MutableBoundingBox box = usePieceBounds ? getIntersectingPieceBoxOnPlayer(playerEntity, structureStart) : structureStart.getBoundingBox();
+        MutableBoundingBox box = usePieceBounds ? getIntersectingPieceBoxOnPlayer(target, structureStart) : structureStart.getBoundingBox();
 
         // We're not inside a piece here.
         if (box == null) {
@@ -182,10 +182,10 @@ public class StructureStartProtection {
     }
 
     @Nullable
-    public static MutableBoundingBox getIntersectingPieceBoxOnPlayer(ServerPlayerEntity playerEntity, StructureStart<?> structureStart) {
+    public static MutableBoundingBox getIntersectingPieceBoxOnPlayer(BlockPos target, StructureStart<?> structureStart) {
         for (StructurePiece piece : structureStart.getPieces()) {
             MutableBoundingBox pieceBoundingBox = piece.getBoundingBox();
-            if (pieceBoundingBox.isInside(playerEntity.blockPosition())) {
+            if (pieceBoundingBox.isInside(target)) {
                 return pieceBoundingBox;
             }
         }
