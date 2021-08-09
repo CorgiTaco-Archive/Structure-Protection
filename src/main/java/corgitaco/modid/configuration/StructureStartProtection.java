@@ -27,25 +27,25 @@ public class StructureStartProtection {
             list.add(new AdvancementCondition(Util.make(new HashSet<>(), (set) -> {
                 set.add(new ResourceLocation("adventure/hero_of_the_village"));
             })));
-            list.add(new TimeCondition(false, 1000, 5000));
+            list.add(new TimeCondition(false, 12000, 15000));
         }), true));
 
         map.put(Structure.MINESHAFT, new StructureStartProtection(Util.make(new EnumMap<>(ActionType.class), (actionTypeConditions) -> {
             actionTypeConditions.put(ActionType.CONTAINER_OPEN, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(25, 50));
+                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(15, 20));
                 })));
             }), 0, true));
 
             actionTypeConditions.put(ActionType.BLOCK_BREAK, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(50, 75));
+                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(25, 35));
                 })));
             }), 0, true));
 
             actionTypeConditions.put(ActionType.BLOCK_PLACE, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(75, 100));
+                    typeKillMap.put(EntityType.CAVE_SPIDER, new EntityTypeKillCondition.KillsTracker(45, 55));
                 })));
             }), 0, true));
         }), new ArrayList<>(), true));
@@ -53,19 +53,19 @@ public class StructureStartProtection {
         map.put(Structure.OCEAN_MONUMENT, new StructureStartProtection(Util.make(new EnumMap<>(ActionType.class), (actionTypeConditions) -> {
             actionTypeConditions.put(ActionType.CONTAINER_OPEN, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(25, 50));
+                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(15, 20));
                 })));
             }), 0, true));
 
             actionTypeConditions.put(ActionType.BLOCK_BREAK, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(50, 75));
+                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(25, 35));
                 })));
             }), 0, true));
 
             actionTypeConditions.put(ActionType.BLOCK_PLACE, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(75, 100));
+                    typeKillMap.put(EntityType.GUARDIAN, new EntityTypeKillCondition.KillsTracker(45, 55));
                 })));
             }), 0, true));
         }), new ArrayList<>(), true));
@@ -73,19 +73,19 @@ public class StructureStartProtection {
         map.put(Structure.PILLAGER_OUTPOST, new StructureStartProtection(Util.make(new EnumMap<>(ActionType.class), (actionTypeConditions) -> {
             actionTypeConditions.put(ActionType.CONTAINER_OPEN, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(5, 10));
+                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(2, 6));
                 })));
             }), 0, true));
 
             actionTypeConditions.put(ActionType.BLOCK_BREAK, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(15, 25));
+                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(7, 10));
                 })));
             }), 0, true));
 
             actionTypeConditions.put(ActionType.BLOCK_PLACE, new ConditionContext(Util.make(new ArrayList<>(), (list) -> {
                 list.add(new EntityTypeKillCondition(false, Util.make(new Object2ObjectArrayMap<>(), (typeKillMap) -> {
-                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(25, 50));
+                    typeKillMap.put(EntityType.PILLAGER, new EntityTypeKillCondition.KillsTracker(11, 15));
                 })));
             }), 0, true));
         }), new ArrayList<>(), true));
