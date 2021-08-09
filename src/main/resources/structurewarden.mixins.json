@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "corgitaco.structurewarden.mixin",
   "compatibilityLevel": "JAVA_8",
-  "refmap": "modid.refmap.json",
+  "refmap": "structurewarden.refmap.json",
   "mixins": [
     "MixinDataPackRegistries",
     "MixinItemStack",
