@@ -315,7 +315,9 @@ public class EntityTypeKillCondition extends Condition {
         }
 
         public void setKillsLeft(int killsLeft) {
-            this.killsLeft = killsLeft;
+            if (killsLeft > 0) {
+                this.killsLeft = killsLeft;
+            }
         }
 
         public int getKillsLeftDefault() {

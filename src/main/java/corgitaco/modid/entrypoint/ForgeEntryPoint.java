@@ -22,7 +22,7 @@ public class ForgeEntryPoint {
     @SubscribeEvent
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
         Entity entity = event.getEntity();
-        if (entity instanceof PlayerEntity) {
+        if (entity instanceof ServerPlayerEntity) {
             World level = entity.level;
             for (Structure<?> structure : level.getChunkAt(entity.blockPosition()).getAllReferences().keySet()) {
                 ((ServerWorld) level).startsForFeature(SectionPos.of(entity.blockPosition()), structure).filter(structureStart1 -> structureStart1.getBoundingBox().isInside(entity.blockPosition())).forEach(start -> {

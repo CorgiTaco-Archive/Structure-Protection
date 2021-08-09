@@ -10,12 +10,14 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructurePiece;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class StructureStartProtection {
@@ -93,7 +95,7 @@ public class StructureStartProtection {
         return builder.group(Codec.unboundedMap(ActionType.CODEC, ConditionContext.CONFIG_CODEC).fieldOf("typeConditions").orElse(new Object2ObjectArrayMap<>()).forGetter((structureStartProtection) -> {
             return structureStartProtection.typeToConditionContext;
         }), Codec.list(Condition.REGISTRY_CONFIG_CODEC).fieldOf("conditions").orElse(new ArrayList<>()).forGetter((structureStartProtection) -> {
-            return structureStartProtection.conditions;
+            return structureStartProtection.globalConditions;
         }), Codec.BOOL.fieldOf("usePieceBounds").forGetter((structureStartProtection) -> {
             return structureStartProtection.usePieceBounds;
         })).apply(builder, StructureStartProtection::new);
@@ -103,7 +105,7 @@ public class StructureStartProtection {
         return builder.group(Codec.unboundedMap(ActionType.CODEC, ConditionContext.DISK_CODEC).fieldOf("typeConditions").orElse(new Object2ObjectArrayMap<>()).forGetter((structureStartProtection) -> {
             return structureStartProtection.typeToConditionContext;
         }), Codec.list(Condition.REGISTRY_DISK_CODEC).fieldOf("conditions").forGetter((structureStartProtection) -> {
-            return structureStartProtection.conditions;
+            return structureStartProtection.globalConditions;
         }), Codec.BOOL.fieldOf("usePieceBounds").forGetter((structureStartProtection) -> {
             return structureStartProtection.usePieceBounds;
         })).apply(builder, StructureStartProtection::new);
@@ -111,10 +113,10 @@ public class StructureStartProtection {
 
     private final Map<ActionType, ConditionContext> typeToConditionContext = new EnumMap<>(ActionType.class);
     private final boolean usePieceBounds;
-    private final List<Condition> conditions;
+    private final List<Condition> globalConditions;
 
-    public StructureStartProtection(Map<ActionType, ConditionContext> typeToConditionContext, List<Condition> conditions, boolean usePieceBounds) {
-        this.conditions = conditions;
+    public StructureStartProtection(Map<ActionType, ConditionContext> typeToConditionContext, List<Condition> globalConditions, boolean usePieceBounds) {
+        this.globalConditions = globalConditions;
         this.typeToConditionContext.putAll(typeToConditionContext);
         this.usePieceBounds = usePieceBounds;
     }
@@ -127,66 +129,47 @@ public class StructureStartProtection {
         }
 
         ArrayList<TranslationTextComponent> components = new ArrayList<>();
-        int conditionHits = 0;
         int globalConditionHits = 0;
+
+        @Nullable
+        MutableBoundingBox box = usePieceBounds ? getIntersectingPieceBoxOnPlayer(playerEntity, structureStart) : structureStart.getBoundingBox();
+
+        // We're not inside a piece here.
+        if (box == null) {
+            return true;
+        }
+
+        for (Condition globalCondition : this.globalConditions) {
+            if (globalCondition.checkIfPasses(playerEntity, world, structureStart, box, target, type, components)) {
+                globalConditionHits++;
+            }
+        }
+
+        @Nullable
         ConditionContext conditionContext = this.typeToConditionContext.get(type);
 
-        if (usePieceBounds) {
-            StructurePiece intersectingPiece = null;
-            for (StructurePiece piece : structureStart.getPieces()) {
-                if (piece.getBoundingBox().isInside(target)) {
-                    intersectingPiece = piece;
-                    break;
-                }
-            }
-            if (intersectingPiece == null) {
-                return true;
-            }
-
-            for (Condition condition : this.conditions) {
-                if (conditionContext != null && conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
+        if (conditionContext != null) {
+            int conditionHits = 0;
+            for (Condition condition : conditionContext.conditions) {
+                if (conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
                     return true;
                 }
 
-                if (condition.checkIfPasses(playerEntity, world, structureStart, intersectingPiece.getBoundingBox(), target, type, components)) {
-                    globalConditionHits++;
-                }
-            }
-            if (conditionContext != null) {
-                for (Condition condition : conditionContext.conditions) {
-                    if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
-                        return true;
-                    }
-
-                    if (condition.checkIfPasses(playerEntity, world, structureStart, intersectingPiece.getBoundingBox(), target, type, components)) {
-                        conditionHits++;
-                    }
-                }
-            }
-        } else {
-            for (Condition condition : this.conditions) {
-                if (conditionContext != null && conditionContext.requiredPassedConditions > 0 && conditionHits + (conditionContext.accountGlobalPassedConditions ? globalConditionHits : 0) == conditionContext.requiredPassedConditions) {
-                    return true;
-                }
-
-                if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                    globalConditionHits++;
-                }
-            }
-            if (conditionContext != null) {
-                for (Condition condition : conditionContext.conditions) {
-                    if (conditionContext.requiredPassedConditions > 0 && conditionHits == conditionContext.requiredPassedConditions) {
-                        return true;
-                    }
-
-                    if (condition.checkIfPasses(playerEntity, world, structureStart, structureStart.getBoundingBox(), target, type, components)) {
-                        conditionHits++;
-                    }
+                if (condition.checkIfPasses(playerEntity, world, structureStart, box, target, type, components)) {
+                    conditionHits++;
                 }
             }
         }
 
+        boolean empty = components.isEmpty();
 
+        if (!empty) {
+            printMissingConditions(playerEntity, world, type, components);
+        }
+        return empty;
+    }
+
+    private void printMissingConditions(ServerPlayerEntity playerEntity, ServerWorld world, ActionType type, ArrayList<TranslationTextComponent> components) {
         long gameTime = world.getGameTime();
         if (gameTime - lastMsgTime >= 20) {
             playerEntity.displayClientMessage(new TranslationTextComponent("modid.condition.missing", type.getActionTranslationComponent()), false);
@@ -195,19 +178,28 @@ public class StructureStartProtection {
             }
             lastMsgTime = gameTime;
         }
+    }
 
-        return false;
+    @Nullable
+    public static MutableBoundingBox getIntersectingPieceBoxOnPlayer(ServerPlayerEntity playerEntity, StructureStart<?> structureStart) {
+        for (StructurePiece piece : structureStart.getPieces()) {
+            MutableBoundingBox pieceBoundingBox = piece.getBoundingBox();
+            if (pieceBoundingBox.isInside(playerEntity.blockPosition())) {
+                return pieceBoundingBox;
+            }
+        }
+        return null;
     }
 
     public void onEntityDeath(LivingEntity entity, ServerWorld world, StructureStart<?> structureStart) {
         if (usePieceBounds) {
-            for (Condition condition : conditions) {
+            for (Condition condition : globalConditions) {
                 for (StructurePiece piece : structureStart.getPieces()) {
                     condition.onEntityDeath(entity, world, structureStart, piece.getBoundingBox());
                 }
             }
         } else {
-            for (Condition condition : conditions) {
+            for (Condition condition : globalConditions) {
                 condition.onEntityDeath(entity, world, structureStart, structureStart.getBoundingBox());
             }
         }
@@ -231,13 +223,13 @@ public class StructureStartProtection {
 
     public void playerTick(ServerPlayerEntity player, StructureStart<?> structureStart) {
         if (usePieceBounds) {
-            for (Condition condition : conditions) {
+            for (Condition condition : globalConditions) {
                 for (StructurePiece piece : structureStart.getPieces()) {
                     condition.playerTick(player, structureStart, piece.getBoundingBox());
                 }
             }
         } else {
-            for (Condition condition : conditions) {
+            for (Condition condition : globalConditions) {
                 condition.playerTick(player, structureStart, structureStart.getBoundingBox());
             }
         }
