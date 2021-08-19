@@ -1,6 +1,7 @@
 package corgitaco.structurewarden.mixin;
 
 import corgitaco.structurewarden.StructureProtector;
+import corgitaco.structurewarden.StructureWardenWorldContext;
 import corgitaco.structurewarden.configuration.StructureStartProtection;
 import corgitaco.structurewarden.configuration.condition.ActionType;
 import net.minecraft.entity.item.minecart.ChestMinecartEntity;
@@ -9,6 +10,7 @@ import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
+import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
@@ -26,7 +28,8 @@ import java.util.OptionalInt;
 public abstract class MixinServerPlayerEntity {
 
 
-    @Shadow public abstract ServerWorld getLevel();
+    @Shadow
+    public abstract ServerWorld getLevel();
 
     @Inject(method = "openMenu", at = @At("HEAD"), cancellable = true)
     private void protectContainers(INamedContainerProvider provider, CallbackInfoReturnable<OptionalInt> cir) {
@@ -55,14 +58,20 @@ public abstract class MixinServerPlayerEntity {
     @Inject(method = "tick", at = @At("HEAD"))
     private void playerTickProtector(CallbackInfo ci) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-        for (Structure<?> structure : player.level.getChunkAt(player.blockPosition()).getAllReferences().keySet()) {
-            Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) player.level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
-            structureStart.ifPresent(start -> {
-                StructureStartProtection protector = ((StructureProtector) start).getProtector();
-                if (protector != null) {
-                    protector.playerTick(player, start);
-                }
-            });
+        World level = player.level;
+        StructureWardenWorldContext wardenWorldContext = (StructureWardenWorldContext) level;
+        if (wardenWorldContext.isStructureDimension()) {
+            wardenWorldContext.isInWorldStructure(player);
+        } else {
+            for (Structure<?> structure : level.getChunkAt(player.blockPosition()).getAllReferences().keySet()) {
+                Optional<? extends StructureStart<?>> structureStart = ((ServerWorld) level).startsForFeature(SectionPos.of(player.blockPosition()), structure).findFirst();
+                structureStart.ifPresent(start -> {
+                    StructureStartProtection protector = ((StructureProtector) start).getProtector();
+                    if (protector != null) {
+                        protector.playerTick(player, start);
+                    }
+                });
+            }
         }
     }
 }

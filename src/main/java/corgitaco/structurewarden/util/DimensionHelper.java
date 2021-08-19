@@ -24,9 +24,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.World;
@@ -43,7 +41,6 @@ import net.minecraft.world.storage.SaveFormat.LevelSave;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -59,12 +56,7 @@ public class DimensionHelper {
 
         RegistryKey<World> dimensionRegistryKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(StructureWarden.MOD_ID, id));
         ServerWorld newWorld = getOrCreateWorld(server, dimensionRegistryKey, ((server1, dimensionRegistryKey1) -> new Dimension(previousWorld::dimensionType, previousWorld.getChunkSource().generator)));
-        MutableBoundingBox boundingBox = structureStart.getBoundingBox();
-        Vector3i center = boundingBox.getCenter();
-
-        newWorld.getWorldBorder().setSize(Math.max(boundingBox.getXSpan(), boundingBox.getZSpan()));
-        newWorld.getWorldBorder().setCenter(center.getX(), center.getZ());
-        ((StructureWardenWorldContext) newWorld).setStructureDimension();
+        ((StructureWardenWorldContext) newWorld).setTargetStructureStart(structureStart);
         sendPlayerToDimension(serverPlayer, newWorld, targetVec);
     }
 

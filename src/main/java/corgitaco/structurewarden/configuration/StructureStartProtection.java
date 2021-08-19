@@ -3,13 +3,14 @@ package corgitaco.structurewarden.configuration;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.structurewarden.PlayerToSend;
-import corgitaco.structurewarden.StructureWardenWorldContext;
 import corgitaco.structurewarden.StructureWarden;
+import corgitaco.structurewarden.StructureWardenWorldContext;
 import corgitaco.structurewarden.configuration.condition.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -225,10 +226,17 @@ public class StructureStartProtection {
     }
 
     public void playerTick(ServerPlayerEntity player, StructureStart<?> structureStart) {
+        boolean structureDimension = ((StructureWardenWorldContext) player.getLevel()).isStructureDimension();
 
-        for (StructurePiece piece : structureStart.getPieces()) {
-            if (piece.getBoundingBox().isInside(player.blockPosition()) && !((StructureWardenWorldContext) player.getLevel()).isStructureDimension()) {
-                ((StructureWardenWorldContext) player.getLevel()).getPlayersToSend().add(new PlayerToSend(player, structureStart, player.position()));
+        if (!structureDimension) {
+            for (StructurePiece piece : structureStart.getPieces()) {
+                if (piece.getBoundingBox().isInside(player.blockPosition())) {
+                    ((StructureWardenWorldContext) player.getLevel()).getPlayersToSend().add(new PlayerToSend(player, structureStart, player.position()));
+                }
+            }
+        } else {
+            if(!structureStart.getBoundingBox().isInside(player.blockPosition())) {
+                player.hurt(DamageSource.IN_WALL, 2.5F);
             }
         }
 

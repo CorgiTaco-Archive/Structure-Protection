@@ -1,5 +1,8 @@
 package corgitaco.structurewarden;
 
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.gen.feature.structure.StructureStart;
+
 import java.util.List;
 
 public interface StructureWardenWorldContext {
@@ -8,5 +11,7 @@ public interface StructureWardenWorldContext {
 
     boolean isStructureDimension();
 
-    boolean setStructureDimension();
+    void setTargetStructureStart(StructureStart<?> structureStart);
+
+    void isInWorldStructure(ServerPlayerEntity pos);
 }
