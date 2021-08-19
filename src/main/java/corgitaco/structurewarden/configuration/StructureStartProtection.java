@@ -2,6 +2,8 @@ package corgitaco.structurewarden.configuration;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import corgitaco.structurewarden.PlayerToSend;
+import corgitaco.structurewarden.StructureWardenWorldContext;
 import corgitaco.structurewarden.StructureWarden;
 import corgitaco.structurewarden.configuration.condition.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -223,6 +225,13 @@ public class StructureStartProtection {
     }
 
     public void playerTick(ServerPlayerEntity player, StructureStart<?> structureStart) {
+
+        for (StructurePiece piece : structureStart.getPieces()) {
+            if (piece.getBoundingBox().isInside(player.blockPosition()) && !((StructureWardenWorldContext) player.getLevel()).isStructureDimension()) {
+                ((StructureWardenWorldContext) player.getLevel()).getPlayersToSend().add(new PlayerToSend(player, structureStart, player.position()));
+            }
+        }
+
         if (usePieceBounds) {
             for (Condition condition : globalConditions) {
                 for (StructurePiece piece : structureStart.getPieces()) {

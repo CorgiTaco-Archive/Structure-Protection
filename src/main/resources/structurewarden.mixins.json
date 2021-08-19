@@ -9,6 +9,7 @@
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinServerPlayerEntity",
+    "MixinServerWorld",
     "MixinStructure",
     "MixinStructureStart",
     "access.DimensionGeneratorSettingsAccess",

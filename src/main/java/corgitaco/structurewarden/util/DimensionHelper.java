@@ -16,18 +16,24 @@ package corgitaco.structurewarden.util;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Lifecycle;
+import corgitaco.structurewarden.StructureWarden;
+import corgitaco.structurewarden.StructureWardenWorldContext;
 import corgitaco.structurewarden.mixin.access.MinecraftServerAccess;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.border.IBorderListener;
+import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.listener.IChunkStatusListener;
+import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DerivedWorldInfo;
@@ -36,12 +42,28 @@ import net.minecraft.world.storage.SaveFormat.LevelSave;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 
 
 public class DimensionHelper {
+
+    public static void getOrCreateDimensionAndSendPlayerFromStructureStart(ServerPlayerEntity serverPlayer, StructureStart<?> structureStart, Vector3d targetVec) {
+        ServerWorld previousWorld = serverPlayer.getLevel();
+        MinecraftServer server = previousWorld.getServer();
+        ServerWorld level = server.getLevel(World.OVERWORLD);
+        String id = previousWorld.dimension().location().toString().replace(":", "-") + "_" + Registry.STRUCTURE_FEATURE.getKey(structureStart.getFeature()).toString().replace(":", "-") + "-" + structureStart.getChunkX() + "." + structureStart.getChunkZ();
+
+        RegistryKey<World> dimensionRegistryKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(StructureWarden.MOD_ID, id));
+        ServerWorld newWorld = getOrCreateWorld(server, dimensionRegistryKey, ((server1, dimensionRegistryKey1) -> new Dimension(previousWorld::dimensionType, previousWorld.getChunkSource().generator)));
+        MutableBoundingBox boundingBox = structureStart.getBoundingBox();
+        ((StructureWardenWorldContext) newWorld).setStructureDimension();
+        sendPlayerToDimension(serverPlayer, newWorld, targetVec);
+    }
+
+
     // helper for sending a given player to another dimension
     // for static dimensions (from datapacks, etc) use MinecraftServer::getWorld to get the world object
     // for dynamic dimensions (mystcrafty) use DimensionHelper.getOrCreateWorld to get the target world
@@ -130,8 +152,10 @@ public class DimensionHelper {
                 // so this can probably be left empty for best results and spawns should be handled via other means
                 false); // "tick time", true for overworld, always false for everything else
 
+
         // add world border listener
-        overworld.getWorldBorder().addListener(new IBorderListener.Impl(newWorld.getWorldBorder()));
+        WorldBorder worldBorder = newWorld.getWorldBorder();
+        overworld.getWorldBorder().addListener(new IBorderListener.Impl(worldBorder));
 
         // register world
         map.put(worldKey, newWorld);
