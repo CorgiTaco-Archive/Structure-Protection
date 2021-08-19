@@ -26,6 +26,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.World;
@@ -59,6 +60,10 @@ public class DimensionHelper {
         RegistryKey<World> dimensionRegistryKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(StructureWarden.MOD_ID, id));
         ServerWorld newWorld = getOrCreateWorld(server, dimensionRegistryKey, ((server1, dimensionRegistryKey1) -> new Dimension(previousWorld::dimensionType, previousWorld.getChunkSource().generator)));
         MutableBoundingBox boundingBox = structureStart.getBoundingBox();
+        Vector3i center = boundingBox.getCenter();
+
+        newWorld.getWorldBorder().setSize(Math.max(boundingBox.getXSpan(), boundingBox.getZSpan()));
+        newWorld.getWorldBorder().setCenter(center.getX(), center.getZ());
         ((StructureWardenWorldContext) newWorld).setStructureDimension();
         sendPlayerToDimension(serverPlayer, newWorld, targetVec);
     }
@@ -70,7 +75,7 @@ public class DimensionHelper {
     public static void sendPlayerToDimension(ServerPlayerEntity serverPlayer, ServerWorld targetWorld, Vector3d targetVec) {
         // ensure destination chunk is loaded before we put the player in it
         targetWorld.getChunk(new BlockPos(targetVec));
-        serverPlayer.teleportTo(targetWorld, targetVec.x, targetVec.y, targetVec.z, 1, 1);
+        serverPlayer.teleportTo(targetWorld, targetVec.x, targetVec.y, targetVec.z, serverPlayer.yRot, serverPlayer.xRot);
     }
 
     /**
