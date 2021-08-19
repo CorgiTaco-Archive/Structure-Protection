@@ -11,8 +11,13 @@
     "MixinServerPlayerEntity",
     "MixinStructure",
     "MixinStructureStart",
+    "access.DimensionGeneratorSettingsAccess",
+    "access.MinecraftServerAccess",
     "access.RegistryAccess",
-    "access.StructureStartAccess"
+    "access.SimpleRegistryAccess",
+    "access.StructureStartAccess",
+    "access.WorldBorderAccess",
+    "access.WorldBorderImplAccess"
   ],
   "client": [
   ],
